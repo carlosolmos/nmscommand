@@ -63,7 +63,7 @@ type ListItem struct {
 type Mission struct {
 	DBBaseModel
 	Codename    string `gorm:"unique"`
-	Description *string
+	Description sql.NullString
 	StartDate   sql.NullTime
 	EndDate     sql.NullTime
 	Stage       MissionStage `gorm:"default:0"`
@@ -78,9 +78,9 @@ type Mission struct {
 type System struct {
 	DBBaseModel
 	Galaxy       string
-	Region       *string
-	System       *string
-	Civilization *string
+	Region       sql.NullString
+	System       sql.NullString
+	Civilization sql.NullString
 	StarColor    *StarColor
 	BlackHole    bool
 	Atlas        bool
@@ -91,8 +91,8 @@ type Planet struct {
 	DBBaseModel
 	SystemID     uuid.UUID
 	Name         string
-	Type         *string
-	Alias        *string
+	Type         sql.NullString
+	Alias        sql.NullString
 	PortalCoords []int8   `gorm:"serializer:json"`
 	Resources    []string `gorm:"serializer:json"`
 	Ecosystem    []string `gorm:"serializer:json"`
@@ -124,9 +124,13 @@ type Base struct {
 	DBBaseModel
 	PlanetID    *uuid.UUID
 	BaseName    string
-	BaseType    *string
-	Description *string
+	BaseType    sql.NullString
+	Description sql.NullString
 	Ammenities  []string `gorm:"serializer:json"`
 	Resources   []string `gorm:"serializer:json"`
 	Media       []string `gorm:"serializer:json"`
+}
+
+func NewNullString(s string) sql.NullString {
+	return sql.NullString{String: s, Valid: true}
 }
