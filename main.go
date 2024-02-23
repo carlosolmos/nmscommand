@@ -10,7 +10,7 @@ func main() {
 
 	model.SetupDBDriver()
 
-	db := model.InitTestDB()
+	db := model.InitTestDB(model.DBFile)
 
 	db.AutoMigrate(&model.Mission{}, &model.System{}, &model.Planet{},
 		&model.MissionLogEntry{}, &model.Discovery{}, &model.Base{})

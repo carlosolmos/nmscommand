@@ -20,7 +20,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestMissionCRUD(t *testing.T) {
-	db := InitTestDB()
+	db := InitTestDB(DBTestFile)
 
 	// Create a new mission
 	mission := Mission{
@@ -92,7 +92,7 @@ func TestMissionCRUD(t *testing.T) {
 
 // Test CRUD operations for System
 func TestSystemCRUD(t *testing.T) {
-	db := InitTestDB()
+	db := InitTestDB(DBTestFile)
 
 	// Create a new system
 
@@ -154,7 +154,7 @@ func TestSystemCRUD(t *testing.T) {
 
 // Test CRUD operations for Planet
 func TestPlanetCRUD(t *testing.T) {
-	db := InitTestDB()
+	db := InitTestDB(DBTestFile)
 
 	// Create a new planet
 
@@ -217,7 +217,7 @@ func TestPlanetCRUD(t *testing.T) {
 
 // Test CRUD operations for MissionLogEntry
 func TestMissionLogEntryCRUD(t *testing.T) {
-	db := InitTestDB()
+	db := InitTestDB(DBTestFile)
 
 	// Create a new mission log entry
 
@@ -276,7 +276,7 @@ func TestMissionLogEntryCRUD(t *testing.T) {
 
 // Test CRUD operations for Discovery
 func TestDiscoveryCRUD(t *testing.T) {
-	db := InitTestDB()
+	db := InitTestDB(DBTestFile)
 
 	// Create a new discovery
 	discovery := Discovery{

@@ -13,7 +13,8 @@ import (
 
 const (
 	CustomDriverName = "sqlite3_extended"
-	File             = "file:./foo.db?cache=shared&mode=memory"
+	DBFile           = "file:./nmscommand.db"
+	DBTestFile       = "file:./foo_test.db?cache=shared&mode=memory"
 )
 
 func SetupDBDriver() {
@@ -35,14 +36,14 @@ func SetupDBDriver() {
 
 }
 
-func InitTestDB() *gorm.DB {
-	conn, err := sql.Open(CustomDriverName, File)
+func InitTestDB(dbFile string) *gorm.DB {
+	conn, err := sql.Open(CustomDriverName, dbFile)
 	if err != nil {
 		panic(err)
 	}
 	db, err := gorm.Open(sqlite.Dialector{
 		DriverName: CustomDriverName,
-		DSN:        File,
+		DSN:        dbFile,
 		Conn:       conn,
 	}, &gorm.Config{
 		Logger:                   logger.Default.LogMode(logger.Info),
