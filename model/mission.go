@@ -3,8 +3,6 @@ package model
 import (
 	"database/sql"
 	"time"
-
-	"github.com/google/uuid"
 )
 
 type MissionStage int8
@@ -34,22 +32,26 @@ func (ac AssetClass) String() string {
 	return [...]string{"C", "B", "A", "S"}[ac]
 }
 
-type StarColor int8
+type StarColor int16
 
 const (
-	Yellow StarColor = iota
-	Red
-	Blue
-	Green
+	StarYellow StarColor = iota
+	StarRed
+	StarBlue
+	StarGreen
 )
 
 func (sc StarColor) String() string {
 	return [...]string{"Yellow", "Red", "Blue", "Green"}[sc]
 }
 
+func (sc StarColor) Int16() int16 {
+	return int16(sc)
+}
+
 // Base contains common columns for all tables.
 type DBBaseModel struct {
-	ID        uuid.UUID `gorm:"type:uuid;primaryKey;default:(gen_random_uuid())"`
+	ID        string `gorm:"type:uuid;primaryKey;default:(gen_random_uuid())"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	DeletedAt *time.Time `sql:"index"`
@@ -81,7 +83,7 @@ type System struct {
 	Region       sql.NullString
 	System       sql.NullString
 	Civilization sql.NullString
-	StarColor    *StarColor
+	StarColor    sql.NullInt16
 	BlackHole    bool
 	Atlas        bool
 	Outlaw       bool
@@ -89,7 +91,7 @@ type System struct {
 
 type Planet struct {
 	DBBaseModel
-	SystemID     uuid.UUID
+	SystemID     string `gorm:"not null"`
 	Name         string
 	Type         sql.NullString
 	Alias        sql.NullString
@@ -103,18 +105,18 @@ type Planet struct {
 
 type MissionLogEntry struct {
 	DBBaseModel
-	MissionID uuid.UUID
+	MissionID string `gorm:"not null"`
 	Entry     string
-	SystemID  *uuid.UUID
-	PlanetID  *uuid.UUID
-	BaseID    *uuid.UUID
+	SystemID  sql.NullString
+	PlanetID  sql.NullString
+	BaseID    sql.NullString
 	Media     []string `gorm:"serializer:json"`
 }
 
 type Discovery struct {
 	DBBaseModel
-	SystemID    *uuid.UUID
-	PlanetID    *uuid.UUID
+	SystemID    sql.NullString
+	PlanetID    sql.NullString
 	Description string
 	Wonder      bool
 	Media       []string `gorm:"serializer:json"`
@@ -122,7 +124,7 @@ type Discovery struct {
 
 type Base struct {
 	DBBaseModel
-	PlanetID    *uuid.UUID
+	PlanetID    string `gorm:"not null"`
 	BaseName    string
 	BaseType    sql.NullString
 	Description sql.NullString
@@ -133,4 +135,8 @@ type Base struct {
 
 func NewNullString(s string) sql.NullString {
 	return sql.NullString{String: s, Valid: true}
+}
+
+func NewNullInt16(i int16) sql.NullInt16 {
+	return sql.NullInt16{Int16: i, Valid: true}
 }
