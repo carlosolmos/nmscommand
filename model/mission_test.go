@@ -12,10 +12,7 @@ import (
 )
 
 func TestMain(m *testing.M) {
-	SetupDBDriver()
-
 	exitVal := m.Run()
-
 	os.Exit(exitVal)
 }
 

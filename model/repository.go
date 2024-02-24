@@ -50,11 +50,8 @@ type missionRepository struct {
 }
 
 func NewMissionRepository(db *gorm.DB) MissionRepository {
-	if !DriverInitialized {
-		SetupDBDriver()
-	}
 	return &missionRepository{
-		db: InitTestDB(DBFile),
+		db: db,
 	}
 }
 

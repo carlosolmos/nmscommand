@@ -39,6 +39,9 @@ func SetupDBDriver() {
 }
 
 func InitTestDB(dbFile string) *gorm.DB {
+	if !DriverInitialized {
+		SetupDBDriver()
+	}
 	conn, err := sql.Open(CustomDriverName, dbFile)
 	if err != nil {
 		panic(err)
