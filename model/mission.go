@@ -115,6 +115,7 @@ type MissionLogEntry struct {
 
 type Discovery struct {
 	DBBaseModel
+	MissionID   sql.NullString
 	SystemID    sql.NullString
 	PlanetID    sql.NullString
 	Description string
@@ -131,12 +132,4 @@ type Base struct {
 	Ammenities  []string `gorm:"serializer:json"`
 	Resources   []string `gorm:"serializer:json"`
 	Media       []string `gorm:"serializer:json"`
-}
-
-func NewNullString(s string) sql.NullString {
-	return sql.NullString{String: s, Valid: true}
-}
-
-func NewNullInt16(i int16) sql.NullInt16 {
-	return sql.NullInt16{Int16: i, Valid: true}
 }

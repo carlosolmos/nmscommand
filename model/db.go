@@ -17,6 +17,8 @@ const (
 	DBTestFile       = "file:./foo_test.db?cache=shared&mode=memory"
 )
 
+var DriverInitialized = false
+
 func SetupDBDriver() {
 	// Setup test database
 	sql.Register(CustomDriverName,
@@ -33,7 +35,7 @@ func SetupDBDriver() {
 			},
 		},
 	)
-
+	DriverInitialized = true
 }
 
 func InitTestDB(dbFile string) *gorm.DB {
@@ -65,4 +67,12 @@ func InitTestDB(dbFile string) *gorm.DB {
 
 	return db
 
+}
+
+func NewNullString(s string) sql.NullString {
+	return sql.NullString{String: s, Valid: true}
+}
+
+func NewNullInt16(i int16) sql.NullInt16 {
+	return sql.NullInt16{Int16: i, Valid: true}
 }
