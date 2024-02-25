@@ -3,6 +3,8 @@ package model
 import (
 	"database/sql"
 
+	"nmscommand/utils"
+
 	"github.com/google/uuid"
 	sqliteGo "github.com/mattn/go-sqlite3"
 	log "github.com/sirupsen/logrus"
@@ -38,7 +40,7 @@ func SetupDBDriver() {
 	DriverInitialized = true
 }
 
-func InitTestDB(dbFile string) *gorm.DB {
+func InitDB(dbFile string) *gorm.DB {
 	if !DriverInitialized {
 		SetupDBDriver()
 	}
@@ -46,15 +48,21 @@ func InitTestDB(dbFile string) *gorm.DB {
 	if err != nil {
 		panic(err)
 	}
+	gormConfig := gorm.Config{
+		SkipDefaultTransaction:   true,
+		DisableNestedTransaction: true,
+	}
+	if utils.GlobalDebug {
+		gormConfig.Logger = logger.Default.LogMode(logger.Info)
+	} else {
+		gormConfig.Logger = logger.Default.LogMode(logger.Error)
+
+	}
 	db, err := gorm.Open(sqlite.Dialector{
 		DriverName: CustomDriverName,
 		DSN:        dbFile,
 		Conn:       conn,
-	}, &gorm.Config{
-		Logger:                   logger.Default.LogMode(logger.Info),
-		SkipDefaultTransaction:   true,
-		DisableNestedTransaction: true,
-	})
+	}, &gormConfig)
 
 	if err != nil {
 		log.Fatal(err)
