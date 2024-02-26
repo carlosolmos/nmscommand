@@ -2,7 +2,8 @@ from sqlalchemy import create_engine, DateTime
 from sqlalchemy.orm import sessionmaker, declarative_base
 from datetime import datetime
 from dbmodels import Mission, Base
-
+from typing import Optional
+from sqlalchemy.orm.session import Session
 
 # Define the SQLAlchemy engine
 #engine = create_engine('sqlite:///nmscommand.db', echo=True)
@@ -20,7 +21,8 @@ def create_session():
 # Example CRUD operations
 
 # Create
-def create_mission(session, codename, description, start_date, end_date, stage, milestones, swag, tech, resources, media):
+def create_mission(session, codename: str, description: str, start_date: datetime, end_date: datetime, stage: int, 
+                   milestones: list[str], swag: list[str], tech: list[str], resources: list[str], media: list[str]) -> Mission:
     new_mission = Mission(
         codename=codename,
         description=description,
@@ -37,20 +39,21 @@ def create_mission(session, codename, description, start_date, end_date, stage, 
     session.commit()
     return new_mission
 
+
 # Read
-def get_mission_by_codename(session, codename):
+def get_mission_by_codename(session: Session, codename: str) -> Optional[Mission]:
     mission = session.query(Mission).filter_by(codename=codename).first()
     return mission
 
 # Update
-def update_mission_stage(session, codename, new_stage):
+def update_mission_stage(session: Session, codename: str, new_stage: int) -> None:
     mission = get_mission_by_codename(session, codename)
     if mission:
         mission.stage = new_stage
         session.commit()
 
 # Delete
-def delete_mission(session, codename):
+def delete_mission(session: Session, codename: str) -> None:
     mission = get_mission_by_codename(session, codename)
     if mission:
         session.delete(mission)

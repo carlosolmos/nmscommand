@@ -1,0 +1,51 @@
+Input {
+    dock: top;
+    width: 100%;
+}
+
+#welcome_container {
+    height: 100%;
+    margin: 4 8;
+    background: $panel;
+    color: $text;
+    border: tall $background;
+    padding: 1 2;
+}
+
+.welcome_message {
+    text-style: bold;
+    text-align: center;
+    height: 100%;
+    content-align: center middle;
+}
+
+HomeWidget {
+    width: 100%;
+    height: 9;
+    padding: 1 2;
+    margin: 1 2;
+    background: $panel;
+    border: $secondary tall;
+    content-align: center middle;
+}
+
+.home_search_link {
+    padding: 1 2;
+    
+}
+
+HomeLastActivity {
+    layout: horizontal;
+    width: 100%;
+    height: 9;
+    padding: 1 2;
+    margin: 1 2;
+    background: $panel;
+    border: $secondary tall;
+    content-align: center middle;
+}
+
+.home_box {
+    margin: 0 1;
+    width: 21fr;
+}

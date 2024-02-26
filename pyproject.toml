@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "nmscommand"
+version = "0.1.0"
+description = "No Man's Sky Mission Companion"
+authors = ["Carlos Olmos <carlos@metistd.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+SQLAlchemy = "^2.0.27"
+textual = "^0.52.1"
+rich = "^13.7.0"
+httpx = "^0.27.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
