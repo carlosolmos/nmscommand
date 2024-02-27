@@ -90,7 +90,8 @@ dummy_missions = [
 dummy_mission_log_entries = [{
                 "id": "1",
                 "mission_id": "1",
-                "entry": "This is the first entry for mission 1",
+                "mission_name": "Mission 1 longer title",
+                "entry": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
                 "system_id": "1",
                 "planet_id": "1",
                 "planetbase_id": "1",
