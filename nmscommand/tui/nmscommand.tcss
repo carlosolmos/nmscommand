@@ -60,7 +60,7 @@ HomeMissions {
     layout: vertical;
     width: 100%;
     height: 9;
-    padding: 1 2;
+    padding: 0 2;
     margin: 1 2;
     background: $panel;
     border: $secondary tall;
@@ -71,7 +71,30 @@ HomeArchive {
     layout: vertical;
     width: 100%;
     height: 9;
-    padding: 1 2;
+    padding: 0 2;
+    margin: 1 2;
+    background: $panel;
+    border: $secondary tall;
+    content-align: center middle;
+}
+
+HomeArchive OptionList {
+    width: 100%;
+    height: 100%;
+    
+}
+
+HomeMissions OptionList {
+    width: 100%;
+    height: 100%;
+    
+}
+
+HomeSearch {
+    layout: vertical;
+    width: 100%;
+    height: 6;
+    padding: 0 2;
     margin: 1 2;
     background: $panel;
     border: $secondary tall;

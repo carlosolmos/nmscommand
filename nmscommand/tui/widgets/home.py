@@ -4,7 +4,7 @@ Home screen widget
 
 from textual.app import ComposeResult
 from textual.screen import Screen
-from textual.widgets import Static, Footer, Header
+from textual.widgets import Static, Footer, Header, OptionList, Input
 from textual.containers import ScrollableContainer
 
 from .dummydata import dummy_mission_log_entries, dummy_missions
@@ -32,7 +32,7 @@ class HomeLastActivity(Static):
         super().__init__(id=_id)
         self.log_entries = log_entries
         self.border_title = "Last Activity"
-        self.border_subtitle = "(l) log"
+        self.border_subtitle = "(l) Log"
 
     def compose(self) -> ComposeResult:
         yield Static(f'[@click=\'app.bell\']{self.log_entries[0]["mission_name"][:20]}[/]', 
@@ -52,9 +52,7 @@ class HomeMissions(Static):
         self.border_subtitle = "(m) Mission Roster"
 
     def compose(self) -> ComposeResult:
-        for mission in self.missions:
-            yield Static(f'[@click=\'app.bell\']▫ {mission["name"][:20]}:[/] {mission["description"][:80]}',
-                         classes="home_box_link")
+        yield OptionList(*[f'[@click=\'app.bell\']▫ {mission["name"][:20]}:[/] {mission["description"][:80]}' for mission in self.missions ])
 
 
 class HomeArchive(Static):
@@ -67,10 +65,12 @@ class HomeArchive(Static):
         self.border_subtitle = "(a) Archive Files"
 
     def compose(self) -> ComposeResult:
-        yield Static('[@click=\'app.bell\']▫ Systems >[/]', classes="home_box_link")
-        yield Static('[@click=\'app.bell\']▫ Planets >[/]', classes="home_box_link")
-        yield Static('[@click=\'app.bell\']▫ Bases >[/]', classes="home_box_link")
-        yield Static('[@click=\'app.bell\']▫ Discoveries >[/]', classes="home_box_link")
+        yield OptionList(
+            "▫ Systems >",
+            "▫ Planets >",
+            "▫ Bases >",
+            "▫ Discoveries >"
+        )
 
 
 class HomeSearch(Static):
@@ -79,9 +79,10 @@ class HomeSearch(Static):
     """
     def __init__(self, _id: str):
         super().__init__(id=_id)
+        self.border_subtitle = "(s) Advanced Search"
 
-    def compose(self) -> ComposeResult: 
-        yield Static("[@click='app.bell']Search[/]")
+    def compose(self) -> ComposeResult:
+        yield Input(placeholder="Search", id="search", classes="home_search")
 
 
 class HomeScreen(Screen):

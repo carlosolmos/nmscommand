@@ -1,7 +1,7 @@
-import httpx
-from rich.text import Text
-
-from textual.app import App, ComposeResult
+"""
+Launcher for NMSCommand
+"""
+from textual.app import App
 # import NMSWelcome from widgets/welcome
 from widgets.welcome import NMSWelcomeScreen
 from widgets.home import HomeScreen
@@ -18,8 +18,9 @@ class NMSCommandApp(App):
 
     MODES = {"welcome": NMSWelcomeScreen, 
              "home": HomeScreen}
-    
+
     def on_mount(self) -> None:
+        """Mount the welcome screen on startup."""
         self.switch_mode("welcome")
 
 if __name__ == "__main__":
