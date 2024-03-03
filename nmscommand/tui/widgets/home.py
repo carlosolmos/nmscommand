@@ -9,21 +9,6 @@ from textual.containers import ScrollableContainer
 
 from .dummydata import dummy_mission_log_entries, dummy_missions
 
-
-class HomeWidget(Static):
-    """
-    Sample Widget
-    """
-    def __init__(self, _id: str, title: str = "The title"):
-        super().__init__(id=_id)
-        self.border_title = title
-        self.border_subtitle = "Subtitle"
-
-    def compose(self) -> ComposeResult:
-        yield Static("Some", classes="home_widget_title")
-        yield Static("Something")
-
-
 class HomeLastActivity(Static):
     """
     Last activity from the log
@@ -90,6 +75,9 @@ class HomeScreen(Screen):
     Home screen
     """
     BINDINGS = [("q", "quit", "Quit"),
+                ("l", "app.bell", "Log"),
+                ("m", "app.bell", "Missions"),
+                ("a", "app.bell", "Archive"),
                 ("s", "app.bell", "Search")]
     TITLE = "NMS Command Home"
 

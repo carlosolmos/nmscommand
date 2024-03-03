@@ -1,7 +1,3 @@
-Input {
-    dock: top;
-    width: 100%;
-}
 
 #welcome_container {
     height: 100%;
@@ -99,4 +95,41 @@ HomeSearch {
     background: $panel;
     border: $secondary tall;
     content-align: center middle;
+}
+
+
+
+NewMission {
+    layout: horizontal;
+    width: 100%;
+    padding: 0 2;
+    margin: 1 2;
+    background: $panel;
+    border: solid green;
+    content-align: center middle;
+}
+
+NewMission #start_date {
+    width:30%;
+}
+
+.button_container {
+    padding: 1 2;
+}
+
+NewMission TabbedContent #--content-tab-nm_milestones {
+    
+}
+
+NewMission TabPane {
+    height: auto;
+    padding: 0 0;
+    margin: 0 0;
+}
+
+NewMission #nm_milestones_list {
+    height: 12;
+    border: solid yellow;
+    margin: 0 0;
+    padding: 0 0;
 }

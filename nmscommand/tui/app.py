@@ -2,9 +2,9 @@
 Launcher for NMSCommand
 """
 from textual.app import App
-# import NMSWelcome from widgets/welcome
 from widgets.welcome import NMSWelcomeScreen
 from widgets.home import HomeScreen
+from widgets.newmission import NewMissionScreen
 
 
 class NMSCommandApp(App):
@@ -14,10 +14,12 @@ class NMSCommandApp(App):
     MODES = {"welcome": NMSWelcomeScreen()}
     BINDINGS = [("1", "switch_mode('welcome')", "Welcome"), 
                 ("2", "switch_mode('home')", "Home"),
+                ("3", "switch_mode('newmission')", "New Mission"),
                 ("q", "quit", "Quit")]
 
     MODES = {"welcome": NMSWelcomeScreen, 
-             "home": HomeScreen}
+             "home": HomeScreen,
+             "newmission": NewMissionScreen}
 
     def on_mount(self) -> None:
         """Mount the welcome screen on startup."""
