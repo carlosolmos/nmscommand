@@ -1,0 +1,10 @@
+{
+    "[python]": {
+        "files.trimTrailingWhitespace": true,
+        "editor.defaultFormatter": "ms-python.black-formatter",
+        "editor.formatOnSave": true, // new
+        "editor.codeActionsOnSave": {
+          "source.organizeImports": "explicit"
+        },
+       },
+}

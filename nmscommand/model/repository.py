@@ -1,28 +1,44 @@
-from sqlalchemy import create_engine, DateTime
-from sqlalchemy.orm import sessionmaker, declarative_base
+"""Persistence layer"""
+
 from datetime import datetime
-from dbmodels import Mission, Base
 from typing import Optional
 from sqlalchemy.orm.session import Session
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from nmscommand.model.dbmodels import Mission, Base
 
 # Define the SQLAlchemy engine
-#engine = create_engine('sqlite:///nmscommand.db', echo=True)
-engine = create_engine('sqlite:///:memory:', echo=True)
+# engine = create_engine('sqlite:///nmscommand.db', echo=True)
+engine = create_engine("sqlite:///:memory:", echo=True)
 
 # Create the database tables
 Base.metadata.create_all(engine)
 
-# Define a function to create a new session
+
 def create_session():
+    # Define a function to create a new session
     Session = sessionmaker(bind=engine)
     session = Session()
     return session
 
+
 # Example CRUD operations
 
+
 # Create
-def create_mission(session, codename: str, description: str, start_date: datetime, end_date: datetime, stage: int, 
-                   milestones: list[str], swag: list[str], tech: list[str], resources: list[str], media: list[str]) -> Mission:
+def create_mission(
+    session,
+    codename: str,
+    description: str,
+    start_date: datetime,
+    end_date: datetime,
+    stage: int,
+    milestones: list[str],
+    swag: list[str],
+    tech: list[str],
+    resources: list[str],
+    media: list[str],
+) -> Mission:
     new_mission = Mission(
         codename=codename,
         description=description,
@@ -33,7 +49,7 @@ def create_mission(session, codename: str, description: str, start_date: datetim
         swag=swag,
         tech=tech,
         resources=resources,
-        media=media
+        media=media,
     )
     session.add(new_mission)
     session.commit()
@@ -45,12 +61,14 @@ def get_mission_by_codename(session: Session, codename: str) -> Optional[Mission
     mission = session.query(Mission).filter_by(codename=codename).first()
     return mission
 
+
 # Update
 def update_mission_stage(session: Session, codename: str, new_stage: int) -> None:
     mission = get_mission_by_codename(session, codename)
     if mission:
         mission.stage = new_stage
         session.commit()
+
 
 # Delete
 def delete_mission(session: Session, codename: str) -> None:
@@ -59,24 +77,27 @@ def delete_mission(session: Session, codename: str) -> None:
         session.delete(mission)
         session.commit()
 
+
 # Example usage
 if __name__ == "__main__":
     print("Running example usage")
     # Create a session
     session = create_session()
-    
+
     # Create a new mission
-    new_mission = create_mission(session,
-                                 codename="Mission1",
-                                 description="First mission",
-                                 start_date=datetime.now(),
-                                 end_date=datetime.now(),
-                                 stage=1,
-                                 milestones=["milestone1", "milestone2"],
-                                 swag=["swag1", "swag2"],
-                                 tech=["tech1", "tech2"],
-                                 resources=["resource1", "resource2"],
-                                 media=["media1", "media2"])
+    new_mission = create_mission(
+        session,
+        codename="Mission1",
+        description="First mission",
+        start_date=datetime.now(),
+        end_date=datetime.now(),
+        stage=1,
+        milestones=["milestone1", "milestone2"],
+        swag=["swag1", "swag2"],
+        tech=["tech1", "tech2"],
+        resources=["resource1", "resource2"],
+        media=["media1", "media2"],
+    )
 
     # Read the mission
     mission = get_mission_by_codename(session, "Mission1")

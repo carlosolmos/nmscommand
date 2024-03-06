@@ -1,24 +1,24 @@
-""" New Mission Widget """
+"""  Mission Widget """
 
 from textual.app import ComposeResult
 from textual.screen import Screen
 from textual.widgets import (
-    Footer, 
-    Header, 
-    Input, 
-    Button, 
-    TabbedContent, 
+    Footer,
+    Header,
+    Label,
+    TabbedContent,
     TabPane,
-    Static, 
-    OptionList
+    Static,
+    OptionList,
 )
-from textual.containers import Vertical, Horizontal, ScrollableContainer, VerticalScroll
+from textual.containers import Vertical
 
 
 class MilestonesList(Static):
     """
     List of Milestones
     """
+
     def __init__(self, _id: str):
         super().__init__(id=_id)
         self.border_subtitle = "(a) add milestone"
@@ -35,20 +35,29 @@ class MilestonesList(Static):
         )
 
 
+class MissionDetails(Static):
+    """
+    Mission Package
+    """
 
-class NewMission(Static):
-    """
-    New Mission Package Form
-    """
     def __init__(self, _id: str):
         super().__init__(id=_id)
 
     def compose(self) -> ComposeResult:
         with Vertical():
             with Vertical():
-                yield Input(placeholder="CodeName", id="mission_name", classes="new_mission_input")
-                yield Input(placeholder="Objectives", id="mission_description", classes="new_mission_input")
-                yield Input(placeholder="Start Date: 0000-00-00", id="start_date", classes="new_mission_input_short") 
+                yield Label("CodeName")
+                yield Static("CodeName", id="mission_name", classes="new_mission_input")
+                yield Label("Objectives")
+                yield Static(
+                    "Objectives", id="mission_description", classes="new_mission_input"
+                )
+                yield Label("Start Date")
+                yield Static(
+                    "Start Date: 0000-00-00",
+                    id="start_date",
+                    classes="new_mission_input_short",
+                )
                 with TabbedContent():
                     with TabPane("Milestones", id="nm_milestones"):
                         yield MilestonesList("nm_milestones_list")
@@ -59,17 +68,16 @@ class NewMission(Static):
                     with TabPane("Tech", id="nm_tech"):
                         yield Static("Tech", id="tech")
 
-                with Horizontal(classes="button_container"):
-                    yield Button("Submit", id="submit", variant="primary")
-                    yield Button("Cancel", id="cancel")
 
-class NewMissionScreen(Screen):
+class MissionDetailsScreen(Screen):
     """
-    New Mission Screen
+    Mission Screen
     """
-    BINDINGS = [("q", "quit", "Quit"), ("H", "switch_mode('home')", "Home")]
+
+    BINDINGS = [("q", "quit", "Quit"), ("ctrl+h", "switch_mode('home')", "Home")]
     TITLE = "New Mission Package"
+
     def compose(self) -> ComposeResult:
         yield Header()
-        yield NewMission("new_mission_form")
+        yield MissionDetails("new_mission_form")
         yield Footer()
