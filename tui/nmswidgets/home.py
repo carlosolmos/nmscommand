@@ -2,6 +2,7 @@
 Home screen widget
 """
 
+from datetime import datetime
 import asyncio
 from textual.app import ComposeResult
 from textual.events import Focus
@@ -53,16 +54,29 @@ class HomeMissions(Static):
         self.lookup_active_missions()
 
     def compose(self) -> ComposeResult:
-        yield Label(f"K={self.active_message}", id="mission_lbl")
+        yield Label(
+            f"K={self.active_message} - {len(self.active_missions)}", id="mission_lbl"
+        )
         yield OptionList(
             *[
                 f"[@click='app.bell']▫ {mission.codename[:20]}:[/] {mission.description[:80]}"
                 for mission in self.active_missions
-            ]
+            ],
+            id="mission_list",
         )
 
     def watch_active_message(self, old_val: str, new_val: str) -> None:
         print(f"******************Active message changed from {old_val} to {new_val}")
+        try:
+            self.query_one("#mission_lbl", Label).update(new_val)
+            self.query_one("#mission_list", OptionList).update(
+                *[
+                    f"[@click='app.bell']▫ {mission.codename[:20]}:[/] {mission.description[:80]}"
+                    for mission in self.active_missions
+                ]
+            )
+        except Exception as e:
+            pass
 
     def lookup_active_missions(self):
         try:
@@ -115,6 +129,7 @@ class HomeScreen(Screen):
     TITLE = "NMS Command Home"
 
     _message: reactive[str | None] = reactive("Y")
+    _missions: reactive[list[Mission] | None] = reactive([])
 
     def compose(self) -> ComposeResult:
         yield Header()
@@ -122,7 +137,7 @@ class HomeScreen(Screen):
         yield ScrollableContainer(
             HomeLastActivity(dummy_mission_log_entries, "last_activity"),
             HomeMissions(dummy_missions, "Missions").data_bind(
-                active_message=HomeScreen._message
+                active_message=HomeScreen._message, active_missions=HomeScreen._missions
             ),
             HomeArchive("archive"),
             HomeSearch("search"),
@@ -133,11 +148,5 @@ class HomeScreen(Screen):
 
     def on_screen_resume(self) -> None:
         print("=======================Resuming HomeScreen")
-        # self.query_one("#Missions", HomeMissions).active_missions = get_missions_active(
-        #   _session=None
-        # )
-        self._message = "HOLAX"
-
-    def action_greeting(self) -> None:
-        self._message = "HOLAX"
-        self.query_one(HomeMissions).active_message = "OUCH"
+        self._missions = get_missions_active(_session=None)
+        self._message = f"HOLAX {datetime.now().strftime("%H:%M:%S")} - {len(self._missions)}"
