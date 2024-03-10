@@ -137,12 +137,22 @@ class NewMission(Static):
             self.app.push_screen(
                 AlertModalScreen("alert_okay", "Mission Created!"), check_okay
             )
+            self.clearForm()
         except Exception as e:
             self.log(e)
             self.app.push_screen(
                 AlertModalScreen("alert_error", f"Error: {e}"),
                 check_error,
             )
+
+    def clearForm(self) -> None:
+        self.mission_name = ""
+        self.mission_description = ""
+        self.start_date = ""
+        self.mission_milestones = ""
+        self.mission_swag = ""
+        self.mission_resources = ""
+        self.mission_tech = ""
 
 
 class NewMissionScreen(Screen):

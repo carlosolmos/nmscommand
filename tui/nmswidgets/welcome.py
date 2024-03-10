@@ -24,7 +24,7 @@ class NMSWelcomeScreen(Screen):
         self.app.switch_mode("home")
 
     def on_mount(self) -> None:
-        self.update_timer = self.set_interval(2, self.go_home, pause=False)
+        self.update_timer = self.set_interval(1, self.go_home, pause=False)
 
     def go_home(self) -> None:
         self.update_timer.stop()

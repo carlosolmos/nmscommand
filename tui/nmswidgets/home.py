@@ -7,7 +7,8 @@ import asyncio
 from textual.app import ComposeResult
 from textual.events import Focus
 from textual.screen import Screen
-from textual.widgets import Static, Footer, Header, OptionList, Input, Label
+from textual.widgets import Static, Footer, Header, OptionList, Input, Label, DataTable
+from textual.widgets.option_list import Option, Separator
 from textual.containers import ScrollableContainer
 from textual.reactive import reactive
 from .dummydata import dummy_mission_log_entries, dummy_missions
@@ -50,31 +51,36 @@ class HomeMissions(Static):
         self.border_title = "Missions"
         self.border_subtitle = "(m) Mission Roster"
 
+        ROWS = []
+
     def on_mount(self) -> None:
         self.lookup_active_missions()
+        table = self.query_one(DataTable)
+        table.add_columns("Mission", "Description")
+        for mission in self.active_missions:
+            table.add_row(mission.codename[:20], mission.description[:80])
 
     def compose(self) -> ComposeResult:
         yield Label(
             f"K={self.active_message} - {len(self.active_missions)}", id="mission_lbl"
         )
-        yield OptionList(
-            *[
-                f"[@click='app.bell']▫ {mission.codename[:20]}:[/] {mission.description[:80]}"
-                for mission in self.active_missions
-            ],
-            id="mission_list",
-        )
+        yield DataTable(show_header=False, show_row_labels=False, id="mission_table")
+
+    def watch_active_missions(self, old_val: list[Mission], new_val: list[Mission]) -> None:
+        print(f"******************Active missions changed from {old_val} to {new_val}")
+        try:
+            table = self.query_one(DataTable)
+            table.clear()
+            for mission in self.active_missions:
+                table.add_row(mission.codename[:20], mission.description[:80])
+        except Exception as e:
+            self.log(e)
+            pass
 
     def watch_active_message(self, old_val: str, new_val: str) -> None:
         print(f"******************Active message changed from {old_val} to {new_val}")
         try:
             self.query_one("#mission_lbl", Label).update(new_val)
-            self.query_one("#mission_list", OptionList).update(
-                *[
-                    f"[@click='app.bell']▫ {mission.codename[:20]}:[/] {mission.description[:80]}"
-                    for mission in self.active_missions
-                ]
-            )
         except Exception as e:
             pass
 

@@ -86,6 +86,10 @@ HomeMissions OptionList {
     
 }
 
+HomeMissions OptionList  option-list--option {
+  color: red;
+}
+
 HomeSearch {
     layout: vertical;
     width: 100%;
@@ -138,7 +142,7 @@ AlertModalScreen {
     align: center middle;
 }
 
-#alert_message_dialog {
+#dialog {
     padding: 0 1;
     width: 60;
     height: 11;
@@ -153,7 +157,7 @@ AlertModalScreen {
     content-align: center middle;
 }
 
-#alert_message_okay {
+#okay {
     width: 1fr;
     content-align: center middle;
 }
