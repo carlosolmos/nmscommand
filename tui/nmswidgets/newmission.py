@@ -2,6 +2,7 @@
 
 import os
 import sys
+from datetime import datetime
 
 BASE_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(BASE_PATH)
@@ -96,27 +97,52 @@ class NewMission(Static):
         # Give the input focus, so we can start typing straight away
         self.query_one("#mission_name", Input).focus()
 
+    @on(Button.Pressed, "#cancel")
+    def cancelNewMission(self) -> None:
+        self.app.switch_mode("home")
+
     @on(Button.Pressed, "#submit")
     def saveNewMission(self) -> None:
-        _m = Mission(
-            codename=self.mission_name,
-            description=self.mission_description,
-            start_date=self.start_date,
-            stage=MissionStage.Planning,
-            milestones=self.mission_milestones,
-            swag=self.mission_swag,
-            tech=self.mission_tech,
-            resources=self.mission_resources,
-        )
-        # create_mission_from_model(_m)
-        print(_m)
+
+        def check_error(btn: bool) -> None:
+            pass
 
         def check_okay(btn: bool) -> None:
-            """Called when QuitScreen is dismissed."""
             if btn:
                 self.app.switch_mode("home")
 
-        self.app.push_screen(AlertModalScreen("alert", "Mission Created!"), check_okay)
+        try:
+            if not self.mission_name:
+                self.app.push_screen(
+                    AlertModalScreen("alert_error", "Mission Name is required!"),
+                    check_error,
+                )
+                return
+
+            if not self.start_date:
+                _start_date = datetime.now()
+            else:
+                _start_date = datetime.strptime(self.start_date, "%Y-%m-%d")
+            _m = Mission(
+                codename=self.mission_name,
+                description=self.mission_description,
+                start_date=_start_date,
+                stage=MissionStage.Planning,
+                milestones=self.mission_milestones,
+                swag=self.mission_swag,
+                tech=self.mission_tech,
+                resources=self.mission_resources,
+            )
+            create_mission_from_model(_m)
+            self.app.push_screen(
+                AlertModalScreen("alert_okay", "Mission Created!"), check_okay
+            )
+        except Exception as e:
+            self.log(e)
+            self.app.push_screen(
+                AlertModalScreen("alert_error", f"Error: {e}"),
+                check_error,
+            )
 
 
 class NewMissionScreen(Screen):

@@ -133,3 +133,27 @@ NewMission #nm_milestones_list {
     margin: 0 0;
     padding: 0 0;
 }
+
+AlertModalScreen {
+    align: center middle;
+}
+
+#alert_message_dialog {
+    padding: 0 1;
+    width: 60;
+    height: 11;
+    border: thick $background 80%;
+    background: $surface;
+    content-align: center middle;
+}
+
+#alert_message {
+    height: 1fr;
+    width: 1fr;
+    content-align: center middle;
+}
+
+#alert_message_okay {
+    width: 1fr;
+    content-align: center middle;
+}

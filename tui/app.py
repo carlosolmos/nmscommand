@@ -12,6 +12,13 @@ from nmswidgets.welcome import NMSWelcomeScreen
 from nmswidgets.home import HomeScreen
 from nmswidgets.newmission import NewMissionScreen
 from nmswidgets.missiondetails import MissionDetailsScreen
+import logging
+from textual.logging import TextualHandler
+
+logging.basicConfig(
+    level="INFO",
+    handlers=[TextualHandler()],
+)
 
 
 class NMSCommandApp(App):
