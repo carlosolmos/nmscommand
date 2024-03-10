@@ -86,7 +86,7 @@ HomeMissions OptionList {
     
 }
 
-HomeMissions OptionList  option-list--option {
+HomeMissions OptionList option-list--option {
   color: red;
 }
 
@@ -140,9 +140,10 @@ NewMission #nm_milestones_list {
 
 AlertModalScreen {
     align: center middle;
+    
 }
 
-#dialog {
+#alert_message_dialog {
     padding: 0 1;
     width: 60;
     height: 11;
@@ -157,7 +158,7 @@ AlertModalScreen {
     content-align: center middle;
 }
 
-#okay {
-    width: 1fr;
+#alert_message_okay {
+    width: 100%;
     content-align: center middle;
 }

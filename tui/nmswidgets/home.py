@@ -12,7 +12,7 @@ from textual.widgets.option_list import Option, Separator
 from textual.containers import ScrollableContainer
 from textual.reactive import reactive
 from .dummydata import dummy_mission_log_entries, dummy_missions
-
+from nmswidgets.newmission import NewMissionScreen
 from model.repository import get_missions_active
 from model.dbmodels import Mission
 
@@ -43,7 +43,6 @@ class HomeMissions(Static):
     """
 
     active_missions: reactive[list[Mission] | None] = reactive([])
-    active_message: reactive[str | None] = reactive("X")
 
     def __init__(self, missions: list, _id: str):
         super().__init__(id=_id)
@@ -56,32 +55,28 @@ class HomeMissions(Static):
     def on_mount(self) -> None:
         self.lookup_active_missions()
         table = self.query_one(DataTable)
-        table.add_columns("Mission", "Description")
+        table.add_columns("Mission", "Stage", "Started", "Description")
         for mission in self.active_missions:
-            table.add_row(mission.codename[:20], mission.description[:80])
+            table.add_row(
+                mission.codename[:20],
+                mission.stage,
+                mission.start_date.strftime("%Y-%m-%d"),
+                mission.description[:60],
+            )
 
     def compose(self) -> ComposeResult:
-        yield Label(
-            f"K={self.active_message} - {len(self.active_missions)}", id="mission_lbl"
-        )
         yield DataTable(show_header=False, show_row_labels=False, id="mission_table")
 
-    def watch_active_missions(self, old_val: list[Mission], new_val: list[Mission]) -> None:
-        print(f"******************Active missions changed from {old_val} to {new_val}")
+    def watch_active_missions(
+        self, old_val: list[Mission], new_val: list[Mission]
+    ) -> None:
         try:
             table = self.query_one(DataTable)
             table.clear()
-            for mission in self.active_missions:
-                table.add_row(mission.codename[:20], mission.description[:80])
+            table.add_rows(self.load_missions_data_rows(new_val))
+
         except Exception as e:
             self.log(e)
-            pass
-
-    def watch_active_message(self, old_val: str, new_val: str) -> None:
-        print(f"******************Active message changed from {old_val} to {new_val}")
-        try:
-            self.query_one("#mission_lbl", Label).update(new_val)
-        except Exception as e:
             pass
 
     def lookup_active_missions(self):
@@ -89,6 +84,19 @@ class HomeMissions(Static):
             self.app.active_missions = get_missions_active(_session=None)
         except Exception as e:
             self.log(e)
+
+    def load_missions_data_rows(self, active_missions) -> list:
+        rows = []
+        for mission in active_missions:
+            rows.append(
+                (
+                    mission.codename[:20],
+                    mission.stage,
+                    mission.start_date.strftime("%Y-%m-%d"),
+                    mission.description[:80],
+                )
+            )
+        return rows
 
 
 class HomeArchive(Static):
@@ -127,15 +135,14 @@ class HomeScreen(Screen):
         ("q", "quit", "Quit"),
         ("l", "app.bell", "Log"),
         ("m", "app.bell", "Missions"),
-        ("n", "switch_mode('newmission')", "New Mission"),
+        ("n", "new_mission", "New Mission"),
         ("a", "app.bell", "Archive"),
         ("s", "app.bell", "Search"),
         ("space", "greeting"),
     ]
     TITLE = "NMS Command Home"
 
-    _message: reactive[str | None] = reactive("Y")
-    _missions: reactive[list[Mission] | None] = reactive([])
+    active_missions: reactive[list[Mission] | None] = reactive([])
 
     def compose(self) -> ComposeResult:
         yield Header()
@@ -143,16 +150,18 @@ class HomeScreen(Screen):
         yield ScrollableContainer(
             HomeLastActivity(dummy_mission_log_entries, "last_activity"),
             HomeMissions(dummy_missions, "Missions").data_bind(
-                active_message=HomeScreen._message, active_missions=HomeScreen._missions
+                HomeScreen.active_missions
             ),
             HomeArchive("archive"),
             HomeSearch("search"),
         )
 
     def on_mount(self) -> None:
-        print("HomeScreen mounted")
+        pass
 
     def on_screen_resume(self) -> None:
-        print("=======================Resuming HomeScreen")
-        self._missions = get_missions_active(_session=None)
-        self._message = f"HOLAX {datetime.now().strftime("%H:%M:%S")} - {len(self._missions)}"
+        self.log("Resuming Home Screen")
+        self.active_missions = get_missions_active(_session=None)
+
+    def action_new_mission(self) -> None:
+        self.app.push_screen(NewMissionScreen("newmission"))

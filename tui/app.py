@@ -37,7 +37,6 @@ class NMSCommandApp(App):
     MODES = {
         "welcome": NMSWelcomeScreen,
         "home": HomeScreen,
-        "newmission": NewMissionScreen,
         "missiondetails": MissionDetailsScreen,
     }
 

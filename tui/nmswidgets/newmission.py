@@ -54,6 +54,7 @@ class NewMission(Static):
                     classes="new_mission_input",
                 )
                 yield Input(
+                    value=datetime.now().strftime("%Y-%m-%d"),
                     placeholder="Start Date: 0000-00-00",
                     id="start_date",
                     classes="new_mission_input_short",
@@ -99,7 +100,8 @@ class NewMission(Static):
 
     @on(Button.Pressed, "#cancel")
     def cancelNewMission(self) -> None:
-        self.app.switch_mode("home")
+        # self.app.switch_mode("home")
+        self.app.pop_screen()
 
     @on(Button.Pressed, "#submit")
     def saveNewMission(self) -> None:
@@ -109,7 +111,9 @@ class NewMission(Static):
 
         def check_okay(btn: bool) -> None:
             if btn:
-                self.app.switch_mode("home")
+                self.app.uninstall_screen(AlertModalScreen)
+                # self.app.switch_mode("home")
+                self.app.pop_screen()
 
         try:
             if not self.mission_name:
@@ -148,7 +152,7 @@ class NewMission(Static):
     def clearForm(self) -> None:
         self.mission_name = ""
         self.mission_description = ""
-        self.start_date = ""
+        self.start_date = (datetime.now().strftime("%Y-%m-%d"),)
         self.mission_milestones = ""
         self.mission_swag = ""
         self.mission_resources = ""
