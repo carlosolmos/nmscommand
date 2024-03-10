@@ -1,5 +1,11 @@
 """ New Mission Widget """
 
+import os
+import sys
+
+BASE_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(BASE_PATH)
+
 from textual.app import ComposeResult
 from textual.screen import Screen
 from textual.widgets import (
@@ -9,13 +15,26 @@ from textual.widgets import (
     Button,
     Static,
 )
+from textual import events, on
 from textual.containers import Vertical, Horizontal
+from textual.reactive import reactive
+from model.dbmodels import Mission, MissionStage
+from model.repository import create_mission_from_model
+from nmswidgets.alertmessage import AlertModalScreen
 
 
 class NewMission(Static):
     """
     New Mission Package Form
     """
+
+    mission_name: reactive[str | None] = reactive("")
+    mission_description: reactive[str | None] = reactive("")
+    start_date: reactive[str | None] = reactive("")
+    mission_milestones: reactive[str | None] = reactive("")
+    mission_swag: reactive[str | None] = reactive("")
+    mission_resources: reactive[str | None] = reactive("")
+    mission_tech: reactive[str | None] = reactive("")
 
     def __init__(self, _id: str):
         super().__init__(id=_id)
@@ -62,6 +81,42 @@ class NewMission(Static):
                 with Horizontal(classes="button_container"):
                     yield Button("Submit", id="submit", variant="primary")
                     yield Button("Cancel", id="cancel")
+
+    def on_input_changed(self, event: Input.Changed) -> None:
+        self.mission_name = self.query_one("#mission_name", Input).value
+        self.mission_description = self.query_one("#mission_description", Input).value
+        self.start_date = self.query_one("#start_date", Input).value
+        self.mission_milestones = self.query_one("#mission_milestones", Input).value
+        self.mission_swag = self.query_one("#mission_swag", Input).value
+        self.mission_resources = self.query_one("#mission_resources", Input).value
+        self.mission_tech = self.query_one("#mission_tech", Input).value
+
+    def on_mount(self) -> None:
+        """Called when app starts."""
+        # Give the input focus, so we can start typing straight away
+        self.query_one("#mission_name", Input).focus()
+
+    @on(Button.Pressed, "#submit")
+    def saveNewMission(self) -> None:
+        _m = Mission(
+            codename=self.mission_name,
+            description=self.mission_description,
+            start_date=self.start_date,
+            stage=MissionStage.Planning,
+            milestones=self.mission_milestones,
+            swag=self.mission_swag,
+            tech=self.mission_tech,
+            resources=self.mission_resources,
+        )
+        # create_mission_from_model(_m)
+        print(_m)
+
+        def check_okay(btn: bool) -> None:
+            """Called when QuitScreen is dismissed."""
+            if btn:
+                self.app.switch_mode("home")
+
+        self.app.push_screen(AlertModalScreen("alert", "Mission Created!"), check_okay)
 
 
 class NewMissionScreen(Screen):

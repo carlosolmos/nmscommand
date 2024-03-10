@@ -1,11 +1,17 @@
 """Persistence layer"""
 
+import os
+import sys
+
+BASE_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(BASE_PATH)
+
 from datetime import datetime
 from typing import Optional
 from sqlalchemy.orm.session import Session
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from nmscommand.model.dbmodels import Mission, Base
+from model.dbmodels import Mission, Base
 
 # Define the SQLAlchemy engine
 # engine = create_engine('sqlite:///nmscommand.db', echo=True)
@@ -16,7 +22,7 @@ Base.metadata.create_all(engine)
 
 
 def create_session():
-    # Define a function to create a new session
+    """Define a function to create a new session"""
     Session = sessionmaker(bind=engine)
     session = Session()
     return session
@@ -39,7 +45,13 @@ def create_mission(
     resources: list[str],
     media: list[str],
 ) -> Mission:
-    new_mission = Mission(
+    """Create a new mission and add it to the database."""
+    local_session = False
+    if session is None:
+        session = create_session()
+        local_session = True
+
+    _new_mission = Mission(
         codename=codename,
         description=description,
         start_date=start_date,
@@ -51,31 +63,62 @@ def create_mission(
         resources=resources,
         media=media,
     )
-    session.add(new_mission)
+    session.add(_new_mission)
     session.commit()
-    return new_mission
+    if local_session:
+        session.close()
+
+    return _new_mission
+
+
+def create_mission_from_model(_new_mission: Mission) -> Mission:
+    """Create a new mission and add it to the database."""
+    session = create_session()
+    session.add(_new_mission)
+    session.commit()
+    session.close()
+    return _new_mission
 
 
 # Read
-def get_mission_by_codename(session: Session, codename: str) -> Optional[Mission]:
-    mission = session.query(Mission).filter_by(codename=codename).first()
-    return mission
+def get_mission_by_codename(_session: Session, codename: str) -> Optional[Mission]:
+    """Get a mission by its codename."""
+    local_session = False
+    if _session is None:
+        _session = create_session()
+        local_session = True
+    _mission = _session.query(Mission).filter_by(codename=codename).first()
+    return _mission
 
 
 # Update
-def update_mission_stage(session: Session, codename: str, new_stage: int) -> None:
-    mission = get_mission_by_codename(session, codename)
-    if mission:
-        mission.stage = new_stage
-        session.commit()
+def update_mission_stage(_session: Session, codename: str, new_stage: int) -> None:
+    """Update the stage of a mission."""
+    local_session = False
+    if _session is None:
+        _session = create_session()
+        local_session = True
+    _mission = get_mission_by_codename(_session, codename)
+    if _mission:
+        _mission.stage = new_stage
+        _session.commit()
+    if local_session:
+        _session.close()
 
 
 # Delete
-def delete_mission(session: Session, codename: str) -> None:
-    mission = get_mission_by_codename(session, codename)
-    if mission:
-        session.delete(mission)
-        session.commit()
+def delete_mission(_session: Session, codename: str) -> None:
+    """Delete a mission by its codename."""
+    local_session = False
+    if _session is None:
+        _session = create_session()
+        local_session = True
+    _mission = get_mission_by_codename(_session, codename)
+    if _mission:
+        _session.delete(_mission)
+        _session.commit()
+    if local_session:
+        _session.close()
 
 
 # Example usage
