@@ -14,6 +14,8 @@ from nmswidgets.newmission import NewMissionScreen
 from nmswidgets.missiondetails import MissionDetailsScreen
 import logging
 from textual.logging import TextualHandler
+from textual.reactive import reactive
+from model.dbmodels import Mission, MissionStage
 
 logging.basicConfig(
     level="INFO",
@@ -28,7 +30,6 @@ class NMSCommandApp(App):
     BINDINGS = [
         ("ctrl+h", "switch_mode('welcome')", "Welcome"),
         ("2", "switch_mode('home')", "Home"),
-        ("n", "switch_mode('newmission')", "New Mission"),
         ("m", "switch_mode('missiondetails')", "Mission"),
         ("ctrl+q", "quit", "Quit"),
     ]

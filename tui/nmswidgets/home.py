@@ -2,12 +2,17 @@
 Home screen widget
 """
 
+import asyncio
 from textual.app import ComposeResult
+from textual.events import Focus
 from textual.screen import Screen
-from textual.widgets import Static, Footer, Header, OptionList, Input
+from textual.widgets import Static, Footer, Header, OptionList, Input, Label
 from textual.containers import ScrollableContainer
-
+from textual.reactive import reactive
 from .dummydata import dummy_mission_log_entries, dummy_missions
+
+from model.repository import get_missions_active
+from model.dbmodels import Mission
 
 
 class HomeLastActivity(Static):
@@ -35,19 +40,35 @@ class HomeMissions(Static):
     List of active missions
     """
 
+    active_missions: reactive[list[Mission] | None] = reactive([])
+    active_message: reactive[str | None] = reactive("X")
+
     def __init__(self, missions: list, _id: str):
         super().__init__(id=_id)
-        self.missions = missions
+
         self.border_title = "Missions"
         self.border_subtitle = "(m) Mission Roster"
 
+    def on_mount(self) -> None:
+        self.lookup_active_missions()
+
     def compose(self) -> ComposeResult:
+        yield Label(f"K={self.active_message}", id="mission_lbl")
         yield OptionList(
             *[
-                f'[@click=\'app.bell\']▫ {mission["name"][:20]}:[/] {mission["description"][:80]}'
-                for mission in self.missions
+                f"[@click='app.bell']▫ {mission.codename[:20]}:[/] {mission.description[:80]}"
+                for mission in self.active_missions
             ]
         )
+
+    def watch_active_message(self, old_val: str, new_val: str) -> None:
+        print(f"******************Active message changed from {old_val} to {new_val}")
+
+    def lookup_active_missions(self):
+        try:
+            self.app.active_missions = get_missions_active(_session=None)
+        except Exception as e:
+            self.log(e)
 
 
 class HomeArchive(Static):
@@ -86,17 +107,37 @@ class HomeScreen(Screen):
         ("q", "quit", "Quit"),
         ("l", "app.bell", "Log"),
         ("m", "app.bell", "Missions"),
+        ("n", "switch_mode('newmission')", "New Mission"),
         ("a", "app.bell", "Archive"),
         ("s", "app.bell", "Search"),
+        ("space", "greeting"),
     ]
     TITLE = "NMS Command Home"
+
+    _message: reactive[str | None] = reactive("Y")
 
     def compose(self) -> ComposeResult:
         yield Header()
         yield Footer()
         yield ScrollableContainer(
             HomeLastActivity(dummy_mission_log_entries, "last_activity"),
-            HomeMissions(dummy_missions, "Missions"),
+            HomeMissions(dummy_missions, "Missions").data_bind(
+                active_message=HomeScreen._message
+            ),
             HomeArchive("archive"),
             HomeSearch("search"),
         )
+
+    def on_mount(self) -> None:
+        print("HomeScreen mounted")
+
+    def on_screen_resume(self) -> None:
+        print("=======================Resuming HomeScreen")
+        # self.query_one("#Missions", HomeMissions).active_missions = get_missions_active(
+        #   _session=None
+        # )
+        self._message = "HOLAX"
+
+    def action_greeting(self) -> None:
+        self._message = "HOLAX"
+        self.query_one(HomeMissions).active_message = "OUCH"

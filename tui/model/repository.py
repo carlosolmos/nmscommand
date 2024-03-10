@@ -11,7 +11,7 @@ from typing import Optional
 from sqlalchemy.orm.session import Session
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from model.dbmodels import Mission, Base
+from model.dbmodels import Mission, Base, MissionStage
 
 # Define the SQLAlchemy engine
 # engine = create_engine('sqlite:///nmscommand.db', echo=True)
@@ -83,12 +83,20 @@ def create_mission_from_model(_new_mission: Mission) -> Mission:
 # Read
 def get_mission_by_codename(_session: Session, codename: str) -> Optional[Mission]:
     """Get a mission by its codename."""
-    local_session = False
     if _session is None:
         _session = create_session()
-        local_session = True
     _mission = _session.query(Mission).filter_by(codename=codename).first()
     return _mission
+
+
+def get_missions_active(_session: Session) -> list[Mission]:
+    """Get a list of active missions."""
+    if _session is None:
+        _session = create_session()
+    _missions = (
+        _session.query(Mission).filter(Mission.stage < MissionStage.Complete).all()
+    )
+    return _missions
 
 
 # Update
