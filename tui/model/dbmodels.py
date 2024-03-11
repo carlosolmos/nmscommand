@@ -158,3 +158,27 @@ class PlanetBase(Base):
     )
     updated_at = Column(DateTime(timezone=True), nullable=True)
     deleted_at = Column(DateTime(timezone=True), nullable=True)
+
+
+class CheckListItem:
+    description: str
+    checked: bool
+
+    def __init__(self, description: str, checked: bool):
+        self.description = description
+        self.checked = checked
+
+
+def get_mission_stage_string(stage: int) -> str:
+    if stage == MissionStage.Planning:
+        return "Planning"
+    elif stage == MissionStage.Sourcing:
+        return "Sourcing"
+    elif stage == MissionStage.InProgress:
+        return "In Progress"
+    elif stage == MissionStage.Complete:
+        return "Complete"
+    elif stage == MissionStage.Aborted:
+        return "Aborted"
+    else:
+        return "Unknown"

@@ -20,7 +20,7 @@ from textual import events, on
 from textual.containers import Vertical, Horizontal
 from textual.reactive import reactive
 from model.dbmodels import Mission, MissionStage
-from model.repository import create_mission_from_model
+from model.repository import create_mission
 from nmswidgets.alertmessage import AlertModalScreen
 
 
@@ -100,7 +100,6 @@ class NewMission(Static):
 
     @on(Button.Pressed, "#cancel")
     def cancelNewMission(self) -> None:
-        # self.app.switch_mode("home")
         self.app.pop_screen()
 
     @on(Button.Pressed, "#submit")
@@ -112,9 +111,9 @@ class NewMission(Static):
         def check_okay(btn: bool) -> None:
             if btn:
                 self.app.uninstall_screen(AlertModalScreen)
-                # self.app.switch_mode("home")
                 self.app.pop_screen()
 
+        # process submit
         try:
             if not self.mission_name:
                 self.app.push_screen(
@@ -127,17 +126,23 @@ class NewMission(Static):
                 _start_date = datetime.now()
             else:
                 _start_date = datetime.strptime(self.start_date, "%Y-%m-%d")
-            _m = Mission(
+
+            create_mission(
                 codename=self.mission_name,
                 description=self.mission_description,
                 start_date=_start_date,
+                end_date=_start_date,
                 stage=MissionStage.Planning,
-                milestones=self.mission_milestones,
-                swag=self.mission_swag,
-                tech=self.mission_tech,
-                resources=self.mission_resources,
+                milestones=(
+                    self.mission_milestones.split(",") if self.mission_milestones else []
+                ),
+                swag=self.mission_swag.split(",") if self.mission_swag else [],
+                tech=self.mission_tech.split(",") if self.mission_tech else [],
+                resources=(
+                    self.mission_resources.split(",") if self.mission_resources else []
+                ),
+                media=[],
             )
-            create_mission_from_model(_m)
             self.app.push_screen(
                 AlertModalScreen("alert_okay", "Mission Created!"), check_okay
             )
@@ -164,10 +169,13 @@ class NewMissionScreen(Screen):
     New Mission Screen
     """
 
-    BINDINGS = [("q", "quit", "Quit"), ("H", "switch_mode('home')", "Home")]
+    BINDINGS = [("q", "quit", "Quit"), ("escape", "go_home", "Home")]
     TITLE = "New Mission Package"
 
     def compose(self) -> ComposeResult:
         yield Header()
         yield NewMission("new_mission_form")
         yield Footer()
+
+    def action_go_home(self) -> None:
+        self.app.pop_screen()

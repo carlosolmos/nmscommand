@@ -5,13 +5,14 @@ import sys
 
 BASE_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(BASE_PATH)
+import jsons
 
 from datetime import datetime
 from typing import Optional
 from sqlalchemy.orm.session import Session
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from model.dbmodels import Mission, Base, MissionStage
+from model.dbmodels import Mission, Base, MissionStage, CheckListItem
 
 # Define the SQLAlchemy engine
 # engine = create_engine('sqlite:///nmscommand.db', echo=True)
@@ -33,7 +34,6 @@ def create_session():
 
 # Create
 def create_mission(
-    session,
     codename: str,
     description: str,
     start_date: datetime,
@@ -46,10 +46,21 @@ def create_mission(
     media: list[str],
 ) -> Mission:
     """Create a new mission and add it to the database."""
-    local_session = False
-    if session is None:
-        session = create_session()
-        local_session = True
+    _m_milestones = []
+    if len(milestones) > 0:
+        _m_milestones = [CheckListItem(item, False) for item in milestones]
+
+    _m_swag = []
+    if len(swag) > 0:
+        _m_swag = [CheckListItem(item, False) for item in swag]
+
+    _m_tech = []
+    if len(tech) > 0:
+        _m_tech = [CheckListItem(item, False) for item in tech]
+
+    _m_resources = []
+    if len(resources) > 0:
+        _m_resources = [CheckListItem(item, False) for item in resources]
 
     _new_mission = Mission(
         codename=codename,
@@ -57,17 +68,13 @@ def create_mission(
         start_date=start_date,
         end_date=end_date,
         stage=stage,
-        milestones=milestones,
-        swag=swag,
-        tech=tech,
-        resources=resources,
+        milestones=jsons.dump(_m_milestones),
+        swag=jsons.dump(_m_swag),
+        tech=jsons.dump(_m_tech),
+        resources=jsons.dump(_m_resources),
         media=media,
     )
-    session.add(_new_mission)
-    session.commit()
-    if local_session:
-        session.close()
-
+    create_mission_from_model(_new_mission)
     return _new_mission
 
 
@@ -83,19 +90,27 @@ def create_mission_from_model(_new_mission: Mission) -> Mission:
 # Read
 def get_mission_by_codename(_session: Session, codename: str) -> Optional[Mission]:
     """Get a mission by its codename."""
-    if _session is None:
-        _session = create_session()
+    _session = create_session()
     _mission = _session.query(Mission).filter_by(codename=codename).first()
+    _session.close()
+    return _mission
+
+
+def get_mission_by_id(_id: int) -> Optional[Mission]:
+    """Get a mission by its id."""
+    _session = create_session()
+    _mission = _session.query(Mission).filter_by(id=_id).first()
+    _session.close()
     return _mission
 
 
 def get_missions_active(_session: Session) -> list[Mission]:
     """Get a list of active missions."""
-    if _session is None:
-        _session = create_session()
+    _session = create_session()
     _missions = (
         _session.query(Mission).filter(Mission.stage < MissionStage.Complete).all()
     )
+    _session.close()
     return _missions
 
 
@@ -127,42 +142,3 @@ def delete_mission(_session: Session, codename: str) -> None:
         _session.commit()
     if local_session:
         _session.close()
-
-
-# Example usage
-if __name__ == "__main__":
-    print("Running example usage")
-    # Create a session
-    session = create_session()
-
-    # Create a new mission
-    new_mission = create_mission(
-        session,
-        codename="Mission1",
-        description="First mission",
-        start_date=datetime.now(),
-        end_date=datetime.now(),
-        stage=1,
-        milestones=["milestone1", "milestone2"],
-        swag=["swag1", "swag2"],
-        tech=["tech1", "tech2"],
-        resources=["resource1", "resource2"],
-        media=["media1", "media2"],
-    )
-
-    # Read the mission
-    mission = get_mission_by_codename(session, "Mission1")
-    print("Mission:", mission.codename, mission.description)
-
-    # Update the mission stage
-    update_mission_stage(session, "Mission1", 2)
-
-    # Read the updated mission
-    mission = get_mission_by_codename(session, "Mission1")
-    print("Updated Stage:", mission.stage)
-
-    # Delete the mission
-    delete_mission(session, "Mission1")
-
-    # Close the session
-    session.close()

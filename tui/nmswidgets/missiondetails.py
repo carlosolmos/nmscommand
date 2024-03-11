@@ -1,6 +1,8 @@
 """  Mission Widget """
 
+import jsons
 from textual.app import ComposeResult
+from textual.events import Mount
 from textual.screen import Screen
 from textual.widgets import (
     Footer,
@@ -9,30 +11,40 @@ from textual.widgets import (
     TabbedContent,
     TabPane,
     Static,
-    OptionList,
+    Checkbox,
 )
-from textual.containers import Vertical
+from textual.containers import Vertical, VerticalScroll
+from textual.reactive import reactive
+from model.repository import get_mission_by_id
+from model.dbmodels import Mission, CheckListItem
 
 
-class MilestonesList(Static):
+class MissionPackageList(Static):
     """
     List of Milestones
     """
 
-    def __init__(self, _id: str):
+    data: reactive[str | None] = reactive("")
+
+    def __init__(
+        self,
+        _id: str,
+        name: str,
+        data: list[CheckListItem],
+        mark: str = "☐",
+    ):
         super().__init__(id=_id)
-        self.border_subtitle = "(a) add milestone"
+        self.border_title = name
+        self.data = data
+        self.mark = mark
 
     def compose(self) -> ComposeResult:
-        yield OptionList(
-            "▫ Milestone 1",
-            "▫ Milestone 2",
-            "▫ Milestone 3",
-            "▫ Milestone 4",
-            "▫ Milestone 5",
-            "▫ Milestone 6",
-            "▫ Milestone 7",
-        )
+        int_id = 0
+        with VerticalScroll():
+            for item in self.data:
+                int_id += 1
+                chk_id = f"{self.id}_{int_id}"
+                yield Checkbox(f"{self.mark} {item.description}", item.checked, id=chk_id)
 
 
 class MissionDetails(Static):
@@ -40,33 +52,79 @@ class MissionDetails(Static):
     Mission Package
     """
 
-    def __init__(self, _id: str):
+    mission_data: reactive[Mission | None] = reactive(None)
+
+    def __init__(self, _id: str, mission_id: str | None):
         super().__init__(id=_id)
+        self.mission_id = mission_id
+        self.mission_data = get_mission_by_id(mission_id)
+        # load the milestos dictionary into list of CheckListItem
+        self.milestones = [
+            CheckListItem(item["description"], item["checked"])
+            for item in self.mission_data.milestones
+        ]
+        self.swag = [
+            CheckListItem(item["description"], item["checked"])
+            for item in self.mission_data.swag
+        ]
+        self.tech = [
+            CheckListItem(item["description"], item["checked"])
+            for item in self.mission_data.tech
+        ]
+        self.resources = [
+            CheckListItem(item["description"], item["checked"])
+            for item in self.mission_data.resources
+        ]
+
+    def on_mount(self) -> None:
+        pass
 
     def compose(self) -> ComposeResult:
         with Vertical():
             with Vertical():
                 yield Label("CodeName")
-                yield Static("CodeName", id="mission_name", classes="new_mission_input")
+                yield Static(
+                    self.mission_data.codename,
+                    id="mission_name",
+                    classes="new_mission_input",
+                )
                 yield Label("Objectives")
                 yield Static(
-                    "Objectives", id="mission_description", classes="new_mission_input"
+                    self.mission_data.description,
+                    id="mission_description",
+                    classes="new_mission_input",
                 )
                 yield Label("Start Date")
                 yield Static(
-                    "Start Date: 0000-00-00",
+                    self.mission_data.start_date.strftime("%Y-%m-%d"),
                     id="start_date",
                     classes="new_mission_input_short",
                 )
                 with TabbedContent():
                     with TabPane("Milestones", id="nm_milestones"):
-                        yield MilestonesList("nm_milestones_list")
+                        yield MissionPackageList(
+                            data=self.milestones,
+                            _id="milestones",
+                            name="Milestones",
+                        )
                     with TabPane("Swag", id="nm_swag"):
-                        yield Static("Swag", id="swag")
+                        yield MissionPackageList(
+                            data=self.swag,
+                            _id="swag",
+                            name="Swag",
+                        )
                     with TabPane("Resources", id="nm_resources"):
-                        yield Static("Resources", id="resources")
+                        yield MissionPackageList(
+                            data=self.resources,
+                            _id="resources",
+                            name="Resources",
+                        )
                     with TabPane("Tech", id="nm_tech"):
-                        yield Static("Tech", id="tech")
+                        yield MissionPackageList(
+                            data=self.tech,
+                            _id="tech",
+                            name="Technology",
+                        )
 
 
 class MissionDetailsScreen(Screen):
@@ -74,10 +132,21 @@ class MissionDetailsScreen(Screen):
     Mission Screen
     """
 
-    BINDINGS = [("q", "quit", "Quit"), ("ctrl+h", "switch_mode('home')", "Home")]
+    BINDINGS = [("q", "quit", "Quit"), ("escape", "go_home", "Home")]
     TITLE = "New Mission Package"
+
+    def __init__(
+        self,
+        _mission_id: str,
+        _id: str,
+    ):
+        super().__init__(id=_id)
+        self.mission_id = _mission_id
 
     def compose(self) -> ComposeResult:
         yield Header()
-        yield MissionDetails("new_mission_form")
+        yield MissionDetails("mission_details_view", self.mission_id)
         yield Footer()
+
+    def action_go_home(self) -> None:
+        self.app.pop_screen()

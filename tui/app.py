@@ -28,16 +28,12 @@ class NMSCommandApp(App):
 
     CSS_PATH = "nmscommand.tcss"
     BINDINGS = [
-        ("ctrl+h", "switch_mode('welcome')", "Welcome"),
-        ("2", "switch_mode('home')", "Home"),
-        ("m", "switch_mode('missiondetails')", "Mission"),
         ("ctrl+q", "quit", "Quit"),
     ]
 
     MODES = {
         "welcome": NMSWelcomeScreen,
         "home": HomeScreen,
-        "missiondetails": MissionDetailsScreen,
     }
 
     def on_mount(self) -> None:
