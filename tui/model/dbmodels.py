@@ -67,9 +67,10 @@ class System(Base):
     __tablename__ = "systems"
 
     id = Column(String, primary_key=True, default=generate_uuid)
+    name = Column(String)
+    description = Column(String, nullable=True)
     galaxy = Column(String)
     region = Column(String, nullable=True)
-    system = Column(String, nullable=True)
     civilization = Column(String, nullable=True)
     star_color = Column(Integer, nullable=True)
     black_hole = Column(Boolean)
