@@ -15,6 +15,7 @@ from textual.widgets import (
     Input,
     Button,
     Static,
+    TextArea,
 )
 from textual import events, on
 from textual.containers import Vertical, Horizontal
@@ -22,6 +23,28 @@ from textual.reactive import reactive
 from model.dbmodels import Mission, MissionStage
 from model.repository import create_mission
 from nmswidgets.alertmessage import AlertModalScreen
+
+
+NEW_MISION_TEMPLATE = """
+> Mission Objectives...
+
+### Milestones
+- [ ] M1
+- [ ] M2
+
+### Resources
+- [ ] R1
+- [ ] R2
+
+### Swag
+- [ ] S1
+- [ ] S2
+
+### Tech
+- [ ] T1
+- [ ] T2
+
+"""
 
 
 class NewMission(Static):
@@ -48,16 +71,26 @@ class NewMission(Static):
                     id="mission_name",
                     classes="new_mission_input",
                 )
-                yield Input(
-                    placeholder="Objectives",
-                    id="mission_description",
-                    classes="new_mission_input",
-                )
+
                 yield Input(
                     value=datetime.now().strftime("%Y-%m-%d"),
                     placeholder="Start Date: 0000-00-00",
                     id="start_date",
                     classes="new_mission_input_short",
+                )
+
+                yield TextArea.code_editor(
+                    NEW_MISION_TEMPLATE,
+                    language="markdown",
+                    id="mission_description",
+                    theme="vscode_dark",
+                    classes="new_mission_input_text",
+                )
+                """
+                yield Input(
+                    placeholder="Objectives",
+                    id="mission_description",
+                    classes="new_mission_input",
                 )
                 yield Input(
                     placeholder="Milestones: m1,m2,m3",
@@ -79,19 +112,19 @@ class NewMission(Static):
                     id="mission_tech",
                     classes="new_mission_input",
                 )
-
+                """
                 with Horizontal(classes="button_container"):
                     yield Button("Submit", id="submit", variant="primary")
                     yield Button("Cancel", id="cancel")
 
     def on_input_changed(self, event: Input.Changed) -> None:
         self.mission_name = self.query_one("#mission_name", Input).value
-        self.mission_description = self.query_one("#mission_description", Input).value
+        self.mission_description = self.query_one("#mission_description", TextArea).text
         self.start_date = self.query_one("#start_date", Input).value
-        self.mission_milestones = self.query_one("#mission_milestones", Input).value
-        self.mission_swag = self.query_one("#mission_swag", Input).value
-        self.mission_resources = self.query_one("#mission_resources", Input).value
-        self.mission_tech = self.query_one("#mission_tech", Input).value
+        # self.mission_milestones = self.query_one("#mission_milestones", Input).value
+        # self.mission_swag = self.query_one("#mission_swag", Input).value
+        # self.mission_resources = self.query_one("#mission_resources", Input).value
+        # self.mission_tech = self.query_one("#mission_tech", Input).value
 
     def on_mount(self) -> None:
         """Called when app starts."""

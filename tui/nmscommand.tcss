@@ -104,6 +104,7 @@ HomeSearch {
 NewMission {
     layout: horizontal;
     width: 100%;
+    height: 100%;
     padding: 0 2;
     margin: 1 2;
     background: $panel;
@@ -112,6 +113,7 @@ NewMission {
 }
 
 NewMission #start_date {
+    margin: 1 0;
     width:30%;
 }
 
@@ -119,21 +121,17 @@ NewMission #start_date {
     padding: 1 2;
 }
 
-NewMission TabbedContent #--content-tab-nm_milestones {
-    
-}
-
-NewMission TabPane {
-    height: auto;
-    padding: 0 0;
-    margin: 0 0;
-}
 
 NewMission #nm_milestones_list {
     height: 12;
     border: solid yellow;
     margin: 0 0;
     padding: 0 0;
+}
+
+.new_mission_input_text {
+    width: 100%;
+    height: 2fr;
 }
 
 AlertModalScreen {
@@ -159,4 +157,34 @@ AlertModalScreen {
 #alert_message_okay {
     width: 100%;
     content-align: center middle;
+}
+
+
+.mission_description_rich{  
+}
+
+.mission_description_container {
+    width: 100%;
+    height: 2fr;
+    margin: 1 1;
+    background: $panel;
+    border: solid green;
+}
+
+.mission_details_row {
+    width: 100%;
+    margin: 0 1;
+    padding: 0 1;
+    height: 4%;
+}
+
+.mission_details_label {
+    width: 10%;
+    color: $secondary;
+}
+
+.mission_details_value {
+    width: 60%;
+    color: $text;
+    content-align: left middle;
 }

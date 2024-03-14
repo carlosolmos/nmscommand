@@ -12,8 +12,10 @@ from textual.widgets import (
     TabPane,
     Static,
     Checkbox,
+    Markdown,
 )
-from textual.containers import Vertical, VerticalScroll
+from rich.syntax import Syntax
+from textual.containers import Vertical, VerticalScroll, Horizontal
 from textual.reactive import reactive
 from model.repository import get_mission_by_id
 from model.dbmodels import Mission, CheckListItem
@@ -45,6 +47,11 @@ class MissionPackageList(Static):
                 int_id += 1
                 chk_id = f"{self.id}_{int_id}"
                 yield Checkbox(f"{self.mark} {item.description}", item.checked, id=chk_id)
+
+
+TEXT = """
+> Log entry 1, 2021-10-10, 12:00, Mission 1, Stage 1, this is a log entry
+ """
 
 
 class MissionDetails(Static):
@@ -81,50 +88,65 @@ class MissionDetails(Static):
 
     def compose(self) -> ComposeResult:
         with Vertical():
-            with Vertical():
-                yield Label("CodeName")
-                yield Static(
+            yield Horizontal(
+                Static("CodeName: ", classes="mission_details_label"),
+                Static(
                     self.mission_data.codename,
                     id="mission_name",
-                    classes="new_mission_input",
-                )
-                yield Label("Objectives")
-                yield Static(
-                    self.mission_data.description,
-                    id="mission_description",
-                    classes="new_mission_input",
-                )
-                yield Label("Start Date")
-                yield Static(
+                    classes="mission_details_value",
+                ),
+                Static("Start Date: ", classes="mission_details_label"),
+                Static(
                     self.mission_data.start_date.strftime("%Y-%m-%d"),
                     id="start_date",
-                    classes="new_mission_input_short",
-                )
-                with TabbedContent():
-                    with TabPane("Milestones", id="nm_milestones"):
-                        yield MissionPackageList(
-                            data=self.milestones,
-                            _id="milestones",
-                            name="Milestones",
-                        )
-                    with TabPane("Swag", id="nm_swag"):
-                        yield MissionPackageList(
-                            data=self.swag,
-                            _id="swag",
-                            name="Swag",
-                        )
-                    with TabPane("Resources", id="nm_resources"):
-                        yield MissionPackageList(
-                            data=self.resources,
-                            _id="resources",
-                            name="Resources",
-                        )
-                    with TabPane("Tech", id="nm_tech"):
-                        yield MissionPackageList(
-                            data=self.tech,
-                            _id="tech",
-                            name="Technology",
-                        )
+                    classes="mission_details_value",
+                ),
+                classes="mission_details_row",
+            )
+            yield VerticalScroll(
+                Markdown(
+                    self.mission_data.description,
+                    id="mission_description",
+                    classes="mission_description_rich",
+                ),
+                id="mission_description_container_top",
+                classes="mission_description_container",
+            )
+            yield VerticalScroll(
+                Markdown(
+                    TEXT,
+                    id="mission_log",
+                    classes="mission_log_rich",
+                ),
+                id="mission_description_container_bottom",
+                classes="mission_description_container",
+            )
+
+            # with TabbedContent():
+            #     with TabPane("Milestones", id="nm_milestones"):
+            #         yield MissionPackageList(
+            #             data=self.milestones,
+            #             _id="milestones",
+            #             name="Milestones",
+            #         )
+            #     with TabPane("Swag", id="nm_swag"):
+            #         yield MissionPackageList(
+            #             data=self.swag,
+            #             _id="swag",
+            #             name="Swag",
+            #         )
+            #     with TabPane("Resources", id="nm_resources"):
+            #         yield MissionPackageList(
+            #             data=self.resources,
+            #             _id="resources",
+            #             name="Resources",
+            #         )
+            #     with TabPane("Tech", id="nm_tech"):
+            #         yield MissionPackageList(
+            #             data=self.tech,
+            #             _id="tech",
+            #             name="Technology",
+            #         )
 
 
 class MissionDetailsScreen(Screen):
@@ -132,7 +154,11 @@ class MissionDetailsScreen(Screen):
     Mission Screen
     """
 
-    BINDINGS = [("q", "quit", "Quit"), ("escape", "go_home", "Home")]
+    BINDINGS = [
+        ("q", "quit", "Quit"),
+        ("e", "edit", "Edit"),
+        ("escape", "go_home", "Home"),
+    ]
     TITLE = "New Mission Package"
 
     def __init__(
