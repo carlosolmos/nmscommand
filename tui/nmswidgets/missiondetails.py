@@ -13,12 +13,14 @@ from textual.widgets import (
     Static,
     Checkbox,
     Markdown,
+    RichLog,
 )
 from rich.syntax import Syntax
 from textual.containers import Vertical, VerticalScroll, Horizontal
 from textual.reactive import reactive
-from model.repository import get_mission_by_id
-from model.dbmodels import Mission, CheckListItem
+from model.repository import get_mission_by_id, get_all_mission_log_entries_by_mission_id
+from model.dbmodels import Mission, CheckListItem, MissionLogEntry
+from nmswidgets.newmissionlog import MissionLogScreen
 
 
 class MissionPackageList(Static):
@@ -60,11 +62,15 @@ class MissionDetails(Static):
     """
 
     mission_data: reactive[Mission | None] = reactive(None)
+    mission_log_data: reactive[list[MissionLogEntry] | None] = reactive(None)
 
     def __init__(self, _id: str, mission_id: str | None):
         super().__init__(id=_id)
         self.mission_id = mission_id
         self.mission_data = get_mission_by_id(mission_id)
+        self.mission_log_data = get_all_mission_log_entries_by_mission_id(
+            mission_id=mission_id
+        )
         # load the milestos dictionary into list of CheckListItem
         self.milestones = [
             CheckListItem(item["description"], item["checked"])
@@ -83,8 +89,35 @@ class MissionDetails(Static):
             for item in self.mission_data.resources
         ]
 
+    def watch_mission_log_data(
+        self, old_val: list[MissionLogEntry], new_val: list[MissionLogEntry]
+    ) -> None:
+        try:
+            text_log = self.query_one(RichLog)
+            if new_val:
+                text_log.clear()
+                for log in new_val:
+                    date = log.created_at.strftime("%Y-%m-%d %H:%M")
+                    log_line = f"> {date}\n{log.log_entry[:120]}"
+                    text_log.write(
+                        Syntax(
+                            log_line,
+                            "markdown",
+                            word_wrap=True,
+                        )
+                    )
+        except Exception as e:
+            self.log(e)
+            pass
+
     def on_mount(self) -> None:
-        pass
+        """Called  when the DOM is ready."""
+        text_log = self.query_one(RichLog)
+        if self.mission_log_data:
+            for log in self.mission_log_data:
+                date = log.created_at.strftime("%Y-%m-%d %H:%M")
+                log_line = f"> {date}\n{log.log_entry[:120]}"
+                text_log.write(Syntax(log_line, "markdown"))
 
     def compose(self) -> ComposeResult:
         with Vertical():
@@ -113,10 +146,12 @@ class MissionDetails(Static):
                 classes="mission_description_container",
             )
             yield VerticalScroll(
-                Markdown(
-                    TEXT,
+                RichLog(
                     id="mission_log",
                     classes="mission_log_rich",
+                    markup=True,
+                    wrap=True,
+                    auto_scroll=True,
                 ),
                 id="mission_description_container_bottom",
                 classes="mission_description_container",
@@ -157,9 +192,13 @@ class MissionDetailsScreen(Screen):
     BINDINGS = [
         ("q", "quit", "Quit"),
         ("e", "edit", "Edit"),
+        ("l", "new_log", "Log"),
         ("escape", "go_home", "Home"),
     ]
     TITLE = "New Mission Package"
+
+    mission_data: reactive[Mission | None] = reactive(None)
+    mission_log_data: reactive[list[MissionLogEntry] | None] = reactive(None)
 
     def __init__(
         self,
@@ -171,8 +210,19 @@ class MissionDetailsScreen(Screen):
 
     def compose(self) -> ComposeResult:
         yield Header()
-        yield MissionDetails("mission_details_view", self.mission_id)
+        yield MissionDetails("mission_details_view", self.mission_id).data_bind(
+            MissionDetailsScreen.mission_data, MissionDetailsScreen.mission_log_data
+        )
         yield Footer()
 
     def action_go_home(self) -> None:
         self.app.pop_screen()
+
+    def action_new_log(self) -> None:
+        self.app.push_screen(MissionLogScreen(self.mission_id, "mission_log"))
+
+    def on_screen_resume(self) -> None:
+        self.mission_data = get_mission_by_id(self.mission_id)
+        self.mission_log_data = get_all_mission_log_entries_by_mission_id(
+            mission_id=self.mission_id
+        )

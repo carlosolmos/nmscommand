@@ -112,11 +112,11 @@ class MissionLogEntry(Base):
 
     id = Column(String, primary_key=True, default=generate_uuid)
     mission_id = Column(String, ForeignKey("missions.id"))
-    entry = Column(String)
+    log_entry = Column(String)
     system_id = Column(String, ForeignKey("systems.id"), nullable=True)
     planet_id = Column(String, ForeignKey("planets.id"), nullable=True)
     planetbase_id = Column(String, ForeignKey("planetbases.id"), nullable=True)
-    media = Column(JSON)
+    media = Column(JSON, nullable=True)
     mission = relationship("Mission", back_populates="log")
     created_at = Column(
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)

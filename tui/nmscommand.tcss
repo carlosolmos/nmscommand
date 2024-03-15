@@ -121,6 +121,9 @@ NewMission #start_date {
     padding: 1 2;
 }
 
+.button_container Button {
+    margin: 0 1;
+}
 
 NewMission #nm_milestones_list {
     height: 12;
@@ -188,3 +191,4 @@ AlertModalScreen {
     color: $text;
     content-align: left middle;
 }
+
