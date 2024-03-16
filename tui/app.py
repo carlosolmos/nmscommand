@@ -41,6 +41,11 @@ class NMSCommandApp(App):
         self.switch_mode("welcome")
 
 
-if __name__ == "__main__":
+def main():
+    """Main entry point for NMSCommand."""
     app = NMSCommandApp()
     app.run()
+
+
+if __name__ == "__main__":
+    main()
