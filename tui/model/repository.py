@@ -16,7 +16,10 @@ from sqlalchemy.orm import sessionmaker, lazyload
 from model.dbmodels import Mission, Base, MissionStage, CheckListItem, MissionLogEntry
 
 # Define the SQLAlchemy engine
-engine = create_engine("sqlite:///nmscommand.db", echo=True)
+engine = create_engine(
+    "sqlite:///nmscommand.db",
+    echo=True,
+)
 # engine = create_engine("sqlite:///:memory:", echo=True)
 session_maker = sessionmaker(bind=engine)
 session = session_maker()
@@ -108,7 +111,6 @@ def update_mission(
     start_date: datetime,
 ) -> None:
     """Update a mission."""
-    print(description)
     _mission = get_mission_by_id(mission_id)
     if _mission:
         _mission.codename = codename

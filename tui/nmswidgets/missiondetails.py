@@ -24,12 +24,8 @@ from nmswidgets.newmissionlog import MissionLogScreen
 from nmswidgets.detailsmissionlog import MissionLogDetailsScreen
 from nmswidgets.editmission import EditMissionScreen
 
-
+"""
 class MissionPackageList(Static):
-    """
-    List of Milestones
-    """
-
     data: reactive[str | None] = reactive("")
 
     def __init__(
@@ -51,11 +47,7 @@ class MissionPackageList(Static):
                 int_id += 1
                 chk_id = f"{self.id}_{int_id}"
                 yield Checkbox(f"{self.mark} {item.description}", item.checked, id=chk_id)
-
-
-TEXT = """
-> Log entry 1, 2021-10-10, 12:00, Mission 1, Stage 1, this is a log entry
- """
+"""
 
 
 class MissionDetails(Static):
@@ -63,13 +55,20 @@ class MissionDetails(Static):
     Mission Package
     """
 
+    dirty: reactive[bool] = reactive(False)
     mission_data: reactive[Mission | None] = reactive(None)
     mission_log_data: reactive[list[MissionLogEntry] | None] = reactive(None)
+    mission_codename: reactive[str | None] = reactive("")
+    mission_description: reactive[str | None] = reactive("")
+    mission_start_date: reactive[str | None] = reactive("")
 
     def __init__(self, _id: str, mission_id: str | None):
         super().__init__(id=_id)
         self.mission_id = mission_id
         self.mission_data = get_mission_by_id(mission_id)
+        self.mission_codename = self.mission_data.codename
+        self.mission_description = self.mission_data.description
+        self.mission_start_date = self.mission_data.start_date.strftime("%Y-%m-%d")
         self.mission_log_data = get_all_mission_log_entries_by_mission_id(
             mission_id=mission_id
         )
@@ -91,11 +90,38 @@ class MissionDetails(Static):
             for item in self.mission_data.resources
         ]
 
+    def wath_dirty(self, old_val: bool, new_val: bool) -> None:
+        print("************************* watch_dirty")
+        self.dirty = False
+
     def watch_mission_log_data(
         self, old_val: list[MissionLogEntry], new_val: list[MissionLogEntry]
     ) -> None:
+        print("************************* watch_mission_log_data")
         try:
+            mission_log_table = self.query_one("#mission_log_table", DataTable)
+            if mission_log_table:
+                mission_log_table.clear()
+                self.load_missions_data_rows(mission_log_table, new_val)
+        except Exception as e:
+            self.log(e)
             pass
+
+    def watch_mission_data(self, old_val: Mission, new_val: Mission) -> None:
+        try:
+            print("************************* watch_mission_data")
+            self.mission_codename = new_val.codename
+            self.mission_description = new_val.description
+            self.mission_start_date = new_val.start_date.strftime("%Y-%m-%d")
+            mission_name = self.query_one("#mission_name", Static)
+            if mission_name:
+                mission_name.text = new_val.codename
+            mission_description = self.query_one("#mission_description", Markdown)
+            if mission_description:
+                mission_description.text = new_val.description
+            mission_start_date = self.query_one("#start_date", Static)
+            if mission_start_date:
+                mission_start_date.text = new_val.start_date.strftime("%Y-%m-%d")
         except Exception as e:
             self.log(e)
             pass
@@ -114,6 +140,7 @@ class MissionDetails(Static):
         return table
 
     def on_mount(self) -> None:
+        print("-------------------------- on_mount MissionDetails")
         mission_log_table = self.query_one("#mission_log_table", DataTable)
         mission_log_table.add_columns("Date", "Description")
         if mission_log_table and self.mission_log_data:
@@ -131,13 +158,13 @@ class MissionDetails(Static):
             yield Horizontal(
                 Static("CodeName: ", classes="mission_details_label"),
                 Static(
-                    self.mission_data.codename,
+                    self.mission_codename,
                     id="mission_name",
                     classes="mission_details_value",
                 ),
                 Static("Start Date: ", classes="mission_details_label"),
                 Static(
-                    self.mission_data.start_date.strftime("%Y-%m-%d"),
+                    self.mission_start_date,
                     id="start_date",
                     classes="mission_details_value",
                 ),
@@ -146,7 +173,7 @@ class MissionDetails(Static):
             )
             yield VerticalScroll(
                 Markdown(
-                    self.mission_data.description,
+                    self.mission_description,
                     id="mission_description",
                     classes="mission_description_rich",
                 ),
@@ -201,6 +228,7 @@ class MissionDetailsScreen(Screen):
     ]
     TITLE = "New Mission Package"
 
+    dirty: reactive[bool] = reactive(False)
     mission_data: reactive[Mission | None] = reactive(None)
     mission_log_data: reactive[list[MissionLogEntry] | None] = reactive(None)
 
@@ -215,7 +243,9 @@ class MissionDetailsScreen(Screen):
     def compose(self) -> ComposeResult:
         yield Header()
         yield MissionDetails("mission_details_view", self.mission_id).data_bind(
-            MissionDetailsScreen.mission_data, MissionDetailsScreen.mission_log_data
+            mission_data=MissionDetailsScreen.mission_data,
+            mission_log_data=MissionDetailsScreen.mission_log_data,
+            dirty=MissionDetailsScreen.dirty,
         )
         yield Footer()
 
@@ -229,6 +259,7 @@ class MissionDetailsScreen(Screen):
         self.app.push_screen(EditMissionScreen(self.mission_id, "mission_edit"))
 
     def on_screen_resume(self) -> None:
+        self.dirty = True
         self.mission_data = get_mission_by_id(self.mission_id)
         self.mission_log_data = get_all_mission_log_entries_by_mission_id(
             mission_id=self.mission_id
