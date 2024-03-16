@@ -73,7 +73,7 @@ def create_mission(
 
 def create_mission_from_model(_new_mission: Mission) -> Mission:
     """Create a new mission and add it to the database."""
-    session.begin()
+    # session.begin()
     session.add(_new_mission)
     session.commit()
     return _new_mission
@@ -99,9 +99,29 @@ def get_missions_active() -> list[Mission]:
 
 
 # Update
+
+
+def update_mission(
+    mission_id: str,
+    codename: str,
+    description: str,
+    start_date: datetime,
+) -> None:
+    """Update a mission."""
+    print(description)
+    _mission = get_mission_by_id(mission_id)
+    if _mission:
+        _mission.codename = codename
+        _mission.description = description
+        _mission.start_date = start_date
+        session.commit()
+    else:
+        print(f"Mission with id {mission_id} not found.")
+
+
 def update_mission_stage(codename: str, new_stage: int) -> None:
     """Update the stage of a mission."""
-    session.begin()
+    # session.begin()
     _mission = get_mission_by_codename(codename)
     if _mission:
         _mission.stage = new_stage
@@ -111,7 +131,7 @@ def update_mission_stage(codename: str, new_stage: int) -> None:
 # Delete
 def delete_mission(codename: str) -> None:
     """Delete a mission by its codename."""
-    session.begin()
+    # session.begin()
     _mission = get_mission_by_codename(codename)
     if _mission:
         session.delete(_mission)
@@ -141,7 +161,7 @@ def create_mission_log_entry(
 
 def create_mission_log_entry_from_model(_new_log_entry: MissionLogEntry) -> None:
     """Create a new mission log entry and add it to the database."""
-    session.begin()
+    # session.begin()
     session.add(_new_log_entry)
     session.commit()
 
@@ -182,7 +202,7 @@ def get_all_mission_log_entries_by_mission_id(mission_id: str) -> list[MissionLo
 
 def update_mission_log_entry(_id: int, log_entry: str) -> None:
     """Update a mission log entry."""
-    session.begin()
+    # session.begin()
     _log_entry = get_mission_log_entry_by_id(_id)
     if _log_entry:
         _log_entry.log_entry = log_entry

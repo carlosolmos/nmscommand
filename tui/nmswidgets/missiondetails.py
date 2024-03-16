@@ -21,6 +21,8 @@ from textual.reactive import reactive
 from model.repository import get_mission_by_id, get_all_mission_log_entries_by_mission_id
 from model.dbmodels import Mission, CheckListItem, MissionLogEntry
 from nmswidgets.newmissionlog import MissionLogScreen
+from nmswidgets.detailsmissionlog import MissionLogDetailsScreen
+from nmswidgets.editmission import EditMissionScreen
 
 
 class MissionPackageList(Static):
@@ -118,7 +120,11 @@ class MissionDetails(Static):
             self.load_missions_data_rows(mission_log_table, self.mission_log_data)
 
     def on_data_table_row_selected(self, row: DataTable.RowSelected) -> None:
-        print(row.row_key.value)
+        self.app.push_screen(
+            MissionLogDetailsScreen(
+                self.mission_id, row.row_key.value, "mission_log_details"
+            )
+        )
 
     def compose(self) -> ComposeResult:
         with Vertical():
@@ -189,7 +195,7 @@ class MissionDetailsScreen(Screen):
 
     BINDINGS = [
         ("q", "quit", "Quit"),
-        ("e", "edit", "Edit"),
+        ("e", "edit_mission", "Edit"),
         ("l", "new_log", "Log"),
         ("escape", "go_home", "Home"),
     ]
@@ -218,6 +224,9 @@ class MissionDetailsScreen(Screen):
 
     def action_new_log(self) -> None:
         self.app.push_screen(MissionLogScreen(self.mission_id, "mission_log"))
+
+    def action_edit_mission(self) -> None:
+        self.app.push_screen(EditMissionScreen(self.mission_id, "mission_edit"))
 
     def on_screen_resume(self) -> None:
         self.mission_data = get_mission_by_id(self.mission_id)
