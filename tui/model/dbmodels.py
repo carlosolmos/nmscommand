@@ -1,5 +1,6 @@
 import os
 import sys
+from typing import List
 
 BASE_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(BASE_PATH)
@@ -8,7 +9,7 @@ sys.path.append(BASE_PATH)
 import uuid
 from datetime import timezone, datetime
 from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, DateTime, JSON
-from sqlalchemy.orm import relationship, DeclarativeBase
+from sqlalchemy.orm import relationship, DeclarativeBase, Mapped
 
 
 def generate_uuid():
@@ -54,7 +55,7 @@ class Mission(Base):
     swag = Column(JSON)
     tech = Column(JSON)
     resources = Column(JSON)
-    log = relationship("MissionLogEntry", back_populates="mission")
+    log = relationship("MissionLogEntry")
     media = Column(JSON)
     created_at = Column(
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)

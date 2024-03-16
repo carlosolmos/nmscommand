@@ -5,14 +5,25 @@ Home screen widget
 from datetime import datetime
 from textual.app import ComposeResult
 from textual.screen import Screen
-from textual.widgets import Static, Footer, Header, OptionList, Input, DataTable
+from textual.widgets import (
+    Static,
+    Footer,
+    Header,
+    OptionList,
+    Input,
+    DataTable,
+)
 from textual.containers import ScrollableContainer
 from textual.reactive import reactive
 from .dummydata import dummy_mission_log_entries, dummy_missions
 from nmswidgets.newmission import NewMissionScreen
 from nmswidgets.missiondetails import MissionDetailsScreen
-from model.repository import get_missions_active
-from model.dbmodels import Mission, get_mission_stage_string
+from model.repository import get_missions_active, get_last_mission_log_entry
+from model.dbmodels import (
+    Mission,
+    MissionLogEntry,
+    get_mission_stage_string,
+)
 
 
 class HomeLastActivity(Static):
@@ -20,19 +31,40 @@ class HomeLastActivity(Static):
     Last activity from the log
     """
 
+    last_activity: reactive[MissionLogEntry | None] = reactive(None)
+
+    mission_name: reactive[str | None] = reactive("")
+    entry_date: reactive[str | None] = reactive("")
+    log_entry: reactive[str | None] = reactive("")
+
     def __init__(self, log_entries: list, _id: str):
         super().__init__(id=_id)
-        self.log_entries = log_entries
+        self.last_activity = get_last_mission_log_entry()
+        if self.last_activity is not None:
+            self.mission_name = self.last_activity.mission.codename[:25]
+            self.entry_date = self.last_activity.created_at.strftime("%Y-%m-%d %H:%M")
+            self.log_entry = self.last_activity.log_entry[:160]
         self.border_title = "Last Activity"
         self.border_subtitle = "(l) Log"
 
     def compose(self) -> ComposeResult:
         yield Static(
-            f'[@click=\'app.bell\']{self.log_entries[0]["mission_name"][:20]}[/]',
+            f"[@click='app.bell']{self.mission_name}[/]",
             classes="home_box_link",
         )
-        yield Static(str(self.log_entries[0]["created_at"]), classes="home_box")
-        yield Static(str(self.log_entries[0]["entry"]), classes="")
+        yield Static(
+            self.entry_date,
+            classes="home_box",
+        )
+        yield Static(self.log_entry, classes="")
+
+    def watch_last_activity(
+        self, old_val: MissionLogEntry, new_val: MissionLogEntry
+    ) -> None:
+        if new_val is not None:
+            self.mission_name = new_val.mission.codename[:25]
+            self.entry_date = new_val.created_at.strftime("%Y-%m-%d %H:%M")
+            self.log_entry = new_val.log_entry[:160]
 
 
 class HomeMissions(Static):
@@ -78,7 +110,7 @@ class HomeMissions(Static):
 
     def lookup_active_missions(self):
         try:
-            self.app.active_missions = get_missions_active(_session=None)
+            self.app.active_missions = get_missions_active()
         except Exception as e:
             self.log(e)
 
@@ -144,12 +176,15 @@ class HomeScreen(Screen):
     TITLE = "NMS Command Home"
 
     active_missions: reactive[list[Mission] | None] = reactive([])
+    last_activity: reactive[MissionLogEntry | None] = reactive(None)
 
     def compose(self) -> ComposeResult:
         yield Header()
         yield Footer()
         yield ScrollableContainer(
-            HomeLastActivity(dummy_mission_log_entries, "last_activity"),
+            HomeLastActivity(dummy_mission_log_entries, "last_activity").data_bind(
+                HomeScreen.last_activity
+            ),
             HomeMissions(dummy_missions, "Missions").data_bind(
                 HomeScreen.active_missions
             ),
@@ -165,7 +200,8 @@ class HomeScreen(Screen):
 
     def on_screen_resume(self) -> None:
         self.log("Resuming Home Screen")
-        self.active_missions = get_missions_active(_session=None)
+        self.active_missions = get_missions_active()
+        self.last_activity = get_last_mission_log_entry()
 
     def action_new_mission(self) -> None:
         self.app.push_screen(NewMissionScreen("newmission"))

@@ -13,7 +13,7 @@ from textual.widgets import (
     Static,
     Checkbox,
     Markdown,
-    RichLog,
+    DataTable,
 )
 from rich.syntax import Syntax
 from textual.containers import Vertical, VerticalScroll, Horizontal
@@ -93,31 +93,32 @@ class MissionDetails(Static):
         self, old_val: list[MissionLogEntry], new_val: list[MissionLogEntry]
     ) -> None:
         try:
-            text_log = self.query_one(RichLog)
-            if new_val:
-                text_log.clear()
-                for log in new_val:
-                    date = log.created_at.strftime("%Y-%m-%d %H:%M")
-                    log_line = f"> {date}\n{log.log_entry[:120]}"
-                    text_log.write(
-                        Syntax(
-                            log_line,
-                            "markdown",
-                            word_wrap=True,
-                        )
-                    )
+            pass
         except Exception as e:
             self.log(e)
             pass
 
+    def load_missions_data_rows(
+        self, table: DataTable, mission_log: list[MissionLogEntry]
+    ) -> list:
+        table.clear()
+        if mission_log:
+            for entry in mission_log:
+                table.add_row(
+                    entry.created_at.strftime("%Y-%m-%d %H:%M"),
+                    entry.log_entry[:120],
+                    key=entry.id,
+                )
+        return table
+
     def on_mount(self) -> None:
-        """Called  when the DOM is ready."""
-        text_log = self.query_one(RichLog)
-        if self.mission_log_data:
-            for log in self.mission_log_data:
-                date = log.created_at.strftime("%Y-%m-%d %H:%M")
-                log_line = f"> {date}\n{log.log_entry[:120]}"
-                text_log.write(Syntax(log_line, "markdown"))
+        mission_log_table = self.query_one("#mission_log_table", DataTable)
+        mission_log_table.add_columns("Date", "Description")
+        if mission_log_table and self.mission_log_data:
+            self.load_missions_data_rows(mission_log_table, self.mission_log_data)
+
+    def on_data_table_row_selected(self, row: DataTable.RowSelected) -> None:
+        print(row.row_key.value)
 
     def compose(self) -> ComposeResult:
         with Vertical():
@@ -135,6 +136,7 @@ class MissionDetails(Static):
                     classes="mission_details_value",
                 ),
                 classes="mission_details_row",
+                id="mission_details_header",
             )
             yield VerticalScroll(
                 Markdown(
@@ -142,18 +144,14 @@ class MissionDetails(Static):
                     id="mission_description",
                     classes="mission_description_rich",
                 ),
-                id="mission_description_container_top",
-                classes="mission_description_container",
-            )
-            yield VerticalScroll(
-                RichLog(
-                    id="mission_log",
-                    classes="mission_log_rich",
-                    markup=True,
-                    wrap=True,
-                    auto_scroll=True,
+                DataTable(
+                    show_header=False,
+                    show_row_labels=False,
+                    id="mission_log_table",
+                    classes="missions_log_table",
+                    cursor_type="row",
                 ),
-                id="mission_description_container_bottom",
+                id="mission_description_container_top",
                 classes="mission_description_container",
             )
 

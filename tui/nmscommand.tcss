@@ -192,3 +192,18 @@ AlertModalScreen {
     content-align: left middle;
 }
 
+MissionDetails #mission_description_container_top:focus {
+    border: tall $accent;
+}
+
+MissionDetails #mission_description_container_bottom:focus {
+    border: tall $accent;
+}
+
+MissionDetails #mission_description_container_bottom:focus {
+    border: tall $accent;
+}
+
+MissionDetails #mission_log_table:focus {
+    border: tall $accent;
+}
