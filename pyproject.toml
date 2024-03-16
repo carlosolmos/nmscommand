@@ -5,9 +5,11 @@ description = "No Man's Sky Mission Companion"
 authors = ["Carlos Olmos <carlos@metistd.com>"]
 license = "MIT"
 readme = "README.md"
+repository = "https://github.com/carlosolmos/nmscommand"
+packages = [{ include = "tui" }]
 
 [tool.poetry.dependencies]
-python = "^3.12"
+python = "^3.8"
 SQLAlchemy = "^2.0.27"
 textual = {extras = ["syntax"], version = "^0.52.1"}
 rich = "^13.7.0"
@@ -21,3 +23,6 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.black]
 line-length = 119
+
+[tool.poetry.scripts]
+nmscommand = "tui.app:main"

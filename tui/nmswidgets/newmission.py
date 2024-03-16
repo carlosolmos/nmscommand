@@ -28,22 +28,6 @@ from nmswidgets.alertmessage import AlertModalScreen
 NEW_MISION_TEMPLATE = """
 > Mission Objectives...
 
-### Milestones
-- [ ] M1
-- [ ] M2
-
-### Resources
-- [ ] R1
-- [ ] R2
-
-### Swag
-- [ ] S1
-- [ ] S2
-
-### Tech
-- [ ] T1
-- [ ] T2
-
 """
 
 
@@ -162,7 +146,7 @@ class NewMission(Static):
 
             create_mission(
                 codename=self.mission_name,
-                description=self.mission_description,
+                description=self.query_one("#mission_description", TextArea).text,
                 start_date=_start_date,
                 end_date=_start_date,
                 stage=MissionStage.Planning,
